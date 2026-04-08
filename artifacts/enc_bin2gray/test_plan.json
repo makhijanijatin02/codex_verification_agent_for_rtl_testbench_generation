@@ -1,0 +1,135 @@
+{
+  "module_type": "combinational",
+  "exhaustive_possible": true,
+  "total_input_bits": 10,
+  "reset_tests": [
+    {
+      "description": "At power-up (no explicit reset) drive bin=0 and verify gray=0 immediately, confirming default combinational mapping before any other stimulus.",
+      "cycles": 1
+    }
+  ],
+  "normal_tests": [
+    {
+      "description": "Basic incremental sweep across low values to ensure bin^(bin>>1) relationship; exercise representative points without full enumeration.",
+      "vectors": [
+        {
+          "bin": "0000000000",
+          "expect_gray": "0000000000"
+        },
+        {
+          "bin": "0000000001",
+          "expect_gray": "0000000001"
+        },
+        {
+          "bin": "0000000010",
+          "expect_gray": "0000000011"
+        },
+        {
+          "bin": "0000000011",
+          "expect_gray": "0000000010"
+        },
+        {
+          "bin": "0000000100",
+          "expect_gray": "0000000110"
+        },
+        {
+          "bin": "0000011111",
+          "expect_gray": "0000010000"
+        }
+      ]
+    }
+  ],
+  "corner_case_tests": [
+    {
+      "description": "Boundary extremes ensure MSB handling and XOR ripple at edges.",
+      "vectors": [
+        {
+          "bin": "0000000000",
+          "expect_gray": "0000000000"
+        },
+        {
+          "bin": "1111111111",
+          "expect_gray": "1000000000"
+        }
+      ]
+    },
+    {
+      "description": "Alternating-bit patterns stress every XOR pair for independence.",
+      "vectors": [
+        {
+          "bin": "1010101010",
+          "expect_gray": "1111111111"
+        },
+        {
+          "bin": "0101010101",
+          "expect_gray": "1111111110"
+        }
+      ]
+    },
+    {
+      "description": "Single-bit walks detect bit-to-bit crosstalk and ensure each XOR pair only depends on adjacent bits.",
+      "vectors": [
+        {
+          "bin": "1000000000",
+          "expect_gray": "1100000000"
+        },
+        {
+          "bin": "0100000000",
+          "expect_gray": "0110000000"
+        },
+        {
+          "bin": "0010000000",
+          "expect_gray": "0011000000"
+        },
+        {
+          "bin": "0001000000",
+          "expect_gray": "0001100000"
+        },
+        {
+          "bin": "0000100000",
+          "expect_gray": "0000110000"
+        },
+        {
+          "bin": "0000010000",
+          "expect_gray": "0000011000"
+        },
+        {
+          "bin": "0000001000",
+          "expect_gray": "0000001100"
+        },
+        {
+          "bin": "0000000100",
+          "expect_gray": "0000000110"
+        },
+        {
+          "bin": "0000000010",
+          "expect_gray": "0000000011"
+        },
+        {
+          "bin": "0000000001",
+          "expect_gray": "0000000001"
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "Glitch-hunting transition test: apply successive bin values differing in multiple bits (e.g., 0x155->0x2AA->0x3FF->0x000) and sample gray immediately to confirm purely combinational response without meta-stable lag.",
+      "num_cycles": 4
+    },
+    {
+      "description": "Walking Gray verification: iterate bin from 0 to 1023 sequentially (can be accelerated via for-loop) and compare gray trajectory to expected Gray code; ensures no history dependence or stale outputs.",
+      "num_cycles": 1024
+    }
+  ],
+  "random_tests": {
+    "num_vectors": 200,
+    "description": "Random 10-bit bin values with on-the-fly computation of bin^(bin>>1); capture mismatches to catch mutants with localized bit mistakes."
+  },
+  "key_discriminators": [
+    "Every gray[i] must equal bin[i+1]^bin[i]; any mutant miswiring (e.g., using OR or wrong neighbor) is exposed by alternating-bit and single-bit-walk vectors.",
+    "MSB gray[9] must mirror bin[9]; tests that toggle only bin[9] will isolate mutants that continue XORing with nonexistent bits.",
+    "Sequence transitions confirm outputs update combinationally without clock/latched behavior; any sequential mutant exhibiting holdover will fail during rapid value sweeps.",
+    "Exhaustive sweep (feasible for 10 bits) ensures no mutant survives due to untested bin combinations."
+  ]
+}

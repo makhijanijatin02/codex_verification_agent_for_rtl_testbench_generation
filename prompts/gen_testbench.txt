@@ -1,0 +1,81 @@
+You are an expert Verilog testbench writer. Generate a COMPLETE, self-checking Verilog testbench that can discriminate the correct RTL implementation from buggy mutants.
+
+REQUIREMENTS:
+1. The testbench must be compatible with `iverilog` (Icarus Verilog)
+2. Include `timescale 1ns/1ps` at the top
+3. Generate clock and reset stimulus if the module is sequential
+4. Apply directed test vectors based on the test plan
+5. Include self-checking logic: compare DUT outputs with expected values
+6. Print "PASS" if ALL checks succeed, "FAIL" if any check fails
+7. Use $finish to terminate simulation
+8. The testbench module should be named `tb` (or `testbench`)
+
+TESTBENCH STRUCTURE:
+```verilog
+`timescale 1ns/1ps
+
+module tb;
+    // Signal declarations
+    reg clk, reset;
+    reg [N:0] input_signals;
+    wire [M:0] output_signals;
+
+    // DUT instantiation
+    module_name dut (
+        .port(signal),
+        ...
+    );
+
+    // Clock generation (if sequential)
+    initial clk = 0;
+    always #5 clk = ~clk;  // 100MHz clock
+
+    // Test variables
+    integer errors = 0;
+    integer test_num = 0;
+
+    // Task for checking
+    task check;
+        input [M:0] expected;
+        begin
+            test_num = test_num + 1;
+            if (output_signals !== expected) begin
+                $display("FAIL: Test %0d - Expected %h, Got %h", test_num, expected, output_signals);
+                errors = errors + 1;
+            end
+        end
+    endtask
+
+    initial begin
+        // Reset sequence
+        reset = 1;
+        // ... initialize inputs ...
+        #20;
+        reset = 0;
+        #10;
+
+        // Test vectors
+        // ... apply stimulus and check ...
+
+        // Final result
+        if (errors == 0)
+            $display("PASS");
+        else
+            $display("FAIL: %0d errors", errors);
+        $finish;
+    end
+endmodule
+```
+
+CRITICAL RULES:
+- Use `!==` (not `!=`) for comparisons to catch X/Z values
+- Add delays between stimulus and checking for combinational modules (#1 minimum)
+- For sequential modules, check outputs after the appropriate clock edge
+- Use @(posedge clk) or @(negedge clk) for synchronous checking
+- Always initialize all reg signals
+- Test EVERY edge case from the test plan
+- Include at least some random/pseudo-random test vectors using $random if appropriate
+- Make the testbench as DISCRIMINATING as possible - don't just test basic cases
+
+OUTPUT: Return ONLY the complete Verilog testbench code inside a ```verilog code block.
+Do not include any explanation outside the code block.

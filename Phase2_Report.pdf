@@ -1,0 +1,535 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R 12 0 R] /Count 5 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 2328 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 72 710 Tm
+(CODEX VERIFICATION AGENT FOR RTL TESTBENCH GENERATION) Tj
+T*
+(MINI PROJECT 2 ? PHASE 2) Tj
+T*
+(TOPIC 2: AI FOR DESIGN VERIFICATION) Tj
+T*
+() Tj
+T*
+(This project implements a Codex-based verification agent that reads a natural-language RTL) Tj
+T*
+(specification and a set of candidate Verilog implementations, generates a self-checking) Tj
+T*
+(Verilog testbench, and evaluates that testbench through simulation. The goal is to) Tj
+T*
+(automatically isolate the single correct RTL implementation among buggy mutants.) Tj
+T*
+() Tj
+T*
+(1. METHODOLOGY & PROBLEM DEFINITION) Tj
+T*
+() Tj
+T*
+(We address the Google verification-style ICLAD task. Each problem contains:) Tj
+T*
+(? a natural-language specification \(specification.md\)) Tj
+T*
+(? multiple candidate RTL implementations \(mutant_*.v\)) Tj
+T*
+() Tj
+T*
+(Only one RTL implementation is correct. The agent must generate a Verilog testbench that) Tj
+T*
+(passes only the correct design.) Tj
+T*
+() Tj
+T*
+(The scoring metric is:) Tj
+T*
+() Tj
+T*
+(Score = 1 / \(number of passing implementations\)) Tj
+T*
+() Tj
+T*
+(If the correct implementation fails the testbench, the score is 0. The ideal result is 1.0,) Tj
+T*
+(meaning exactly one implementation passes.) Tj
+T*
+() Tj
+T*
+(Our methodology is a structured generate-evaluate-refine workflow:) Tj
+T*
+(1. parse the specification into structured JSON) Tj
+T*
+(2. build a test plan) Tj
+T*
+(3. generate a self-checking Verilog testbench) Tj
+T*
+(4. run simulation on all candidate RTL implementations) Tj
+T*
+(5. refine if the result is not discriminating enough) Tj
+T*
+() Tj
+T*
+(This approach is suitable because the task requires behavioral precision, not just) Tj
+T*
+(syntactically valid code generation.) Tj
+T*
+() Tj
+T*
+(2. AGENT ARCHITECTURE \(COMPONENTS, DESIGN, DIFFERENCES FROM PROMPTING\)) Tj
+T*
+() Tj
+T*
+(The repository is organized as a concrete agent workspace:) Tj
+T*
+() Tj
+T*
+(verification-agent/) Tj
+T*
+(??? AGENTS.md) Tj
+T*
+(??? agent.py) Tj
+T*
+(??? run_pipeline.py) Tj
+T*
+(??? run_sim.py) Tj
+T*
+(??? spec_parser.py) Tj
+T*
+(??? tb_generator.py) Tj
+T*
+(??? simulator.py) Tj
+T*
+(??? prompts/) Tj
+T*
+(??? sample_problem/) Tj
+T*
+(??? tb/) Tj
+T*
+(??? artifacts/) Tj
+T*
+() Tj
+T*
+(Main components:) Tj
+T*
+(? agent.py: orchestrates parsing, planning, generation, simulation, and refinement) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 2241 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 72 710 Tm
+(? run_pipeline.py: single entry-point script for the full workflow) Tj
+T*
+(? run_sim.py: standalone simulation entry point) Tj
+T*
+(? spec_parser.py: structured behavior extraction) Tj
+T*
+(? tb_generator.py: Verilog testbench generation) Tj
+T*
+(? simulator.py: iverilog / vvp execution and result collection) Tj
+T*
+() Tj
+T*
+(The agent loop is:) Tj
+T*
+() Tj
+T*
+(specification.md + mutant_*.v) Tj
+T*
+(        ?) Tj
+T*
+(   parse behavior) Tj
+T*
+(        ?) Tj
+T*
+(   generate test plan) Tj
+T*
+(        ?) Tj
+T*
+(   generate testbench) Tj
+T*
+(        ?) Tj
+T*
+(      simulate) Tj
+T*
+(        ?) Tj
+T*
+(   analyze results) Tj
+T*
+(        ?) Tj
+T*
+( refine if needed) Tj
+T*
+() Tj
+T*
+(This differs from one-shot prompting because the system preserves intermediate artifacts,) Tj
+T*
+(invokes external tools, reads execution results, and can improve later outputs based on) Tj
+T*
+(failures.) Tj
+T*
+() Tj
+T*
+(3. TOOLS & FRAMEWORKS \(EDA TOOLS, LLMS, AGENT FRAMEWORKS\)) Tj
+T*
+() Tj
+T*
+(Tools used:) Tj
+T*
+(? Codex CLI: model execution interface) Tj
+T*
+(? gpt-5-codex: specification parsing, test-plan generation, and testbench generation) Tj
+T*
+(? iverilog: Verilog compilation) Tj
+T*
+(? vvp: simulation execution) Tj
+T*
+(? Python scripts: orchestration and result processing) Tj
+T*
+() Tj
+T*
+(We do not use a separate external agent framework. The agent logic is implemented directly) Tj
+T*
+(in Python as an explicit planner-executor-feedback loop.) Tj
+T*
+() Tj
+T*
+(4. CONTEXT ENGINEERING \(INPUTS, REPRESENTATION, CONTEXT MANAGEMENT\)) Tj
+T*
+() Tj
+T*
+(The agent receives:) Tj
+T*
+(? raw specification text) Tj
+T*
+(? candidate RTL implementations) Tj
+T*
+(? recovered module header information) Tj
+T*
+(? simulation feedback from prior iterations) Tj
+T*
+() Tj
+T*
+(The context is represented as:) Tj
+T*
+(? raw text for the original specification) Tj
+T*
+(? structured JSON for parsed behavior) Tj
+T*
+(? structured JSON for the generated test plan) Tj
+T*
+(? JSON logs and score summaries for simulation results) Tj
+T*
+() Tj
+T*
+(To control context size, parsed behavior and test plans are summarized before being reused) Tj
+T*
+(in large prompts. This reduced Codex timeouts and kept generation requests manageable.) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 2805 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 72 710 Tm
+() Tj
+T*
+(5. INTERACTION WITH EDA TOOLS \(INVOCATION, PARSING, ITERATION\)) Tj
+T*
+() Tj
+T*
+(The agent uses Python subprocess calls to invoke:) Tj
+T*
+(? iverilog -g2012 to compile the generated testbench with each mutant RTL file) Tj
+T*
+(? vvp to execute the simulation) Tj
+T*
+() Tj
+T*
+(Simulation output is parsed using explicit PASS and FAIL markers. Results are stored as JSON) Tj
+T*
+(under artifacts/. This tool interaction is part of an iterative loop: if the score is weak) Tj
+T*
+(or the generated testbench fails, the agent can revise the next attempt.) Tj
+T*
+() Tj
+T*
+(6. PROTOTYPE IMPLEMENTATION \(WHAT WORKS / INCOMPLETE PARTS\)) Tj
+T*
+() Tj
+T*
+(Currently functional:) Tj
+T*
+(? natural-language specification parsing) Tj
+T*
+(? structured spec and test-plan artifact generation) Tj
+T*
+(? self-checking Verilog testbench generation) Tj
+T*
+(? automated simulation across all candidates in a problem directory) Tj
+T*
+(? score computation and JSON result reporting) Tj
+T*
+(? single-command execution via run_pipeline.py) Tj
+T*
+() Tj
+T*
+(Still incomplete:) Tj
+T*
+(? full visible-benchmark evaluation) Tj
+T*
+(? systematic baseline comparison) Tj
+T*
+(? stronger robustness on more complex vectorized modules) Tj
+T*
+() Tj
+T*
+(7. INITIAL RESULTS \(>=1 TESTCASE, METRICS, BASELINE IF AVAILABLE\)) Tj
+T*
+() Tj
+T*
+(We evaluated the prototype on three real visible problems from the public ICLAD Google) Tj
+T*
+(Verification benchmark, using one iteration per problem.) Tj
+T*
+() Tj
+T*
+(| Problem | Mutants | Passing Implementations | Compile Errors | Runtime \(s\) | Observation |) Tj
+T*
+(|--------|--------:|------------------------:|---------------:|------------:|-------------|) Tj
+T*
+(| enc_bin2gray | 31 | 1 | 0 | 62.6 | Strong discrimination |) Tj
+T*
+(| enc_bin2onehot | 31 | 1 | 0 | 141.8 | Strong discrimination |) Tj
+T*
+(| shift_right | 31 | 0 | 31 | 234.4 | Generated testbench failed to compile |) Tj
+T*
+() Tj
+T*
+(The first two results show that the agent can reduce 31 candidate implementations to a) Tj
+T*
+(single passing design in one iteration. The shift_right failure exposes a real limitation:) Tj
+T*
+(the generated testbench used variable part-select expressions that iverilog rejected.) Tj
+T*
+() Tj
+T*
+(We also verified the packaged sample_problem, where the agent achieves 1/6 passing with no) Tj
+T*
+(compile errors.) Tj
+T*
+() Tj
+T*
+(8. AI USAGE & INSIGHTS \(CRITICAL\)) Tj
+T*
+() Tj
+T*
+(AI is central in three places:) Tj
+T*
+(? extracting structured hardware behavior from English specifications) Tj
+T*
+(? generating structured test plans) Tj
+T*
+(? generating and refining Verilog testbenches) Tj
+T*
+() Tj
+T*
+(Where AI works well:) Tj
+T*
+(? interpreting ambiguous natural-language behavior) Tj
+T*
+(? proposing useful directed and corner-case tests) Tj
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
+endobj
+11 0 obj
+<< /Length 2336 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 72 710 Tm
+(? generating good first-pass testbenches for simpler combinational problems) Tj
+T*
+() Tj
+T*
+(Where AI is weaker:) Tj
+T*
+(? strict tool-compatibility details) Tj
+T*
+(? edge cases involving complex packed-vector indexing) Tj
+T*
+(? consistently generating simulator-safe Verilog for all interface styles) Tj
+T*
+() Tj
+T*
+(This means AI is effective for reasoning and candidate generation, but it still benefits) Tj
+T*
+(from deterministic constraints and execution-based validation.) Tj
+T*
+() Tj
+T*
+(9. CHALLENGES, LIMITATIONS, IMPROVEMENTS) Tj
+T*
+() Tj
+T*
+(Key challenges:) Tj
+T*
+(? LLM timeouts on large prompts) Tj
+T*
+(? invisible progress during long generations) Tj
+T*
+(? generated testbenches missing timing-specific checks) Tj
+T*
+(? generated Verilog that compiles poorly on some interface patterns) Tj
+T*
+() Tj
+T*
+(Fixes implemented in this phase:) Tj
+T*
+(? configurable Codex timeout) Tj
+T*
+(? prompt compaction) Tj
+T*
+(? line-buffered logging) Tj
+T*
+(? deterministic synchronous-reset guard) Tj
+T*
+(? iverilog -g2012 compilation support) Tj
+T*
+() Tj
+T*
+(Main limitations:) Tj
+T*
+(? not yet evaluated on the full visible benchmark set) Tj
+T*
+(? not yet robust across all vectorized module shapes) Tj
+T*
+(? refinement still depends partly on prompt behavior) Tj
+T*
+() Tj
+T*
+(Phase 3 improvements:) Tj
+T*
+(? run the full visible benchmark set) Tj
+T*
+(? collect aggregate metrics) Tj
+T*
+(? strengthen deterministic testbench post-processing) Tj
+T*
+(? improve refinement on failing compile cases) Tj
+T*
+() Tj
+T*
+(10. CONCRETE OUTPUTS AND REPRODUCIBILITY) Tj
+T*
+() Tj
+T*
+(The agent produces explicit artifacts, including:) Tj
+T*
+(? generated testbenches under tb/) Tj
+T*
+(? parsed specifications under artifacts/<problem>/parsed_spec.json) Tj
+T*
+(? test plans under artifacts/<problem>/test_plan.json) Tj
+T*
+(? simulation summaries under artifacts/<problem>/iteration_1_results.json) Tj
+T*
+(? final results under artifacts/<problem>/final_result.json) Tj
+T*
+() Tj
+T*
+(The complete workflow is reproducible with one command:) Tj
+T*
+() Tj
+T*
+(python3 run_pipeline.py --problem-dir sample_problem --max-iters 1) Tj
+T*
+() Tj
+T*
+(Real benchmark result artifacts for enc_bin2gray, enc_bin2onehot, and shift_right are) Tj
+T*
+(included in the submission package.) Tj
+T*
+() Tj
+T*
+(11. SUMMARY) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
+endobj
+13 0 obj
+<< /Length 542 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 72 710 Tm
+(This project implements a concrete Codex-based RTL verification agent that reads a) Tj
+T*
+(natural-language specification, generates a self-checking Verilog testbench, runs simulation) Tj
+T*
+(against candidate implementations, and improves the workflow through execution feedback. The) Tj
+T*
+(Phase 2 prototype already shows strong early performance on real ICLAD visible problems,) Tj
+T*
+(while also exposing a meaningful failure mode that defines the next engineering target for) Tj
+T*
+(Phase 3.) Tj
+ET
+endstream
+endobj
+xref
+0 14
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000141 00000 n 
+0000000211 00000 n 
+0000000337 00000 n 
+0000002717 00000 n 
+0000002843 00000 n 
+0000005136 00000 n 
+0000005262 00000 n 
+0000008119 00000 n 
+0000008247 00000 n 
+0000010636 00000 n 
+0000010764 00000 n 
+trailer
+<< /Size 14 /Root 1 0 R >>
+startxref
+11358
+%%EOF

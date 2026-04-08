@@ -1,0 +1,36 @@
+{
+  "module_name": "enc_bin2gray",
+  "ports": [
+    {
+      "name": "bin",
+      "direction": "input",
+      "width": 10,
+      "type": "data"
+    },
+    {
+      "name": "gray",
+      "direction": "output",
+      "width": 10,
+      "type": "data"
+    }
+  ],
+  "has_clock": false,
+  "clock_name": null,
+  "has_reset": false,
+  "reset_name": null,
+  "reset_type": null,
+  "is_sequential": false,
+  "behavior_summary": "Continuously drives gray as the Gray-code equivalent of the 10-bit binary input: gray[9] mirrors bin[9], and each lower bit gray[i] for i=0..8 equals bin[i+1] XOR bin[i], equivalent to gray = bin ^ (bin >> 1).",
+  "edge_cases": [
+    "Purely combinational: gray updates immediately with any change on bin; no storage or timing behavior.",
+    "No overflow/underflow handling is needed because conversion is bitwise; the operation naturally maps all 10-bit values 1:1 to Gray code."
+  ],
+  "state_transitions": [],
+  "priorities": [],
+  "output_behavior": {
+    "combinational_outputs": [
+      "gray"
+    ],
+    "registered_outputs": []
+  }
+}

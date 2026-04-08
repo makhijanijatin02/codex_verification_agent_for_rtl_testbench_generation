@@ -1,0 +1,27 @@
+{
+  "problem_name": "sample_problem",
+  "best_score": 1.0,
+  "iterations_used": 1,
+  "total_time_seconds": 58.89219665527344,
+  "num_mutants": 6,
+  "testbench_path": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/tb/sample_problem_tb.v",
+  "artifacts_dir": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/artifacts/sample_problem",
+  "score_info": {
+    "score": 1.0,
+    "num_passing": 1,
+    "num_failing": 5,
+    "num_compile_errors": 0,
+    "num_total": 6,
+    "correct_passed": true,
+    "passing_mutants": [
+      "mutant_0"
+    ],
+    "failing_mutants": [
+      "mutant_1",
+      "mutant_2",
+      "mutant_3",
+      "mutant_4",
+      "mutant_5"
+    ]
+  }
+}

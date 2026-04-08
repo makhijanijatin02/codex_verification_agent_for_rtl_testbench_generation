@@ -1,0 +1,113 @@
+{
+  "module_type": "combinational",
+  "exhaustive_possible": true,
+  "total_input_bits": 7,
+  "reset_tests": [
+    {
+      "description": "Drive rst=1 while sweeping clk and inputs; verify out stays combinational (15'b0 when in_valid=0, correct one-hot when in_valid=1) despite reset assertion",
+      "cycles": 2
+    },
+    {
+      "description": "Deassert rst then reassert without changing in_valid/in; confirm no glitches or latching and clk phase is irrelevant",
+      "cycles": 2
+    }
+  ],
+  "normal_tests": [
+    {
+      "description": "Exhaustive valid encodings with enable asserted: iterate in_valid=1 and in=0..14, expect a single out bit at position in",
+      "vectors": [
+        {
+          "clk": "toggle",
+          "rst": 0,
+          "in_valid": 1,
+          "in": 0,
+          "expected_out": "15'b000000000000001"
+        },
+        {
+          "clk": "toggle",
+          "rst": 0,
+          "in_valid": 1,
+          "in": 14,
+          "expected_out": "15'b100000000000000"
+        }
+      ]
+    },
+    {
+      "description": "Enable gating check: for each in=0..14 hold in_valid=0 and confirm out remains all zeroes even when inputs change",
+      "vectors": [
+        {
+          "clk": "toggle",
+          "rst": 0,
+          "in_valid": 0,
+          "in": "any",
+          "expected_out": "15'b0"
+        }
+      ]
+    }
+  ],
+  "corner_case_tests": [
+    {
+      "description": "Undefined in=15 handling: apply in_valid=1, in=15 and ensure design does not drive more than one bit or retain stale output (expect X/ignored but monitor for discrimination)",
+      "vectors": [
+        {
+          "clk": "toggle",
+          "rst": 0,
+          "in_valid": 1,
+          "in": 15,
+          "expected_out": "don't-care (flag mismatches)"
+        }
+      ]
+    },
+    {
+      "description": "Simultaneous control extremes: in_valid toggles same cycle as rst; verify reset has no priority and output still purely combinational with in_valid gating",
+      "vectors": [
+        {
+          "clk": "toggle",
+          "rst": 1,
+          "in_valid": 1,
+          "in": 5,
+          "expected_out": "15'b00000100000?? (should remain zero if rst thinks it matters)"
+        }
+      ]
+    },
+    {
+      "description": "Boundary data patterns: alternate 0x0, 0xF, 0x5, 0xA to catch bit-order swaps or off-by-one indexing",
+      "vectors": [
+        {
+          "clk": "toggle",
+          "rst": 0,
+          "in_valid": 1,
+          "in": 0,
+          "expected_out": "bit0=1"
+        },
+        {
+          "clk": "toggle",
+          "rst": 0,
+          "in_valid": 1,
+          "in": 10,
+          "expected_out": "bit10=1"
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "Glitch immunity over time: run multi-cycle pattern where in toggles every cycle, in_valid alternates 1/0, clk continues; confirm out instantly tracks current inputs with no state retention",
+      "num_cycles": 16
+    },
+    {
+      "description": "Hold/setup edge case: change in immediately before clk edges with in_valid=1 to prove clk is irrelevant and outputs settle without registering",
+      "num_cycles": 8
+    }
+  ],
+  "random_tests": {
+    "num_vectors": 200,
+    "description": "Randomize in_valid (biased 60% high) and in (0-14 plus occasional 15) per cycle; check that out equals one-hot when valid and zero otherwise, flag any persistence across cycles"
+  },
+  "key_discriminators": [
+    "in_valid=0 must force out=0 even if previous cycle had valid data\u2014detects missing gating",
+    "clk/rst must have no effect on combinational encoder; any registered behavior exposes incorrect mutants",
+    "Exactly one out bit may be high for in_valid=1, in=0..14; multiple or shifted bits indicate decoding bugs",
+    "Undefined in=15 should not corrupt later outputs; lingering ones reveal stateful errors"
+  ]
+}

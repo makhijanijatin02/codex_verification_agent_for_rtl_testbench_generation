@@ -1,0 +1,55 @@
+{
+  "module_name": "counter_4bit",
+  "ports": [
+    {
+      "name": "clk",
+      "direction": "input",
+      "width": 1,
+      "type": "clock"
+    },
+    {
+      "name": "reset",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "enable",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "count",
+      "direction": "output",
+      "width": 4,
+      "type": "data"
+    }
+  ],
+  "has_clock": true,
+  "clock_name": "clk",
+  "has_reset": true,
+  "reset_name": "reset",
+  "reset_type": "sync_active_high",
+  "is_sequential": true,
+  "behavior_summary": "On each rising edge of clk the 4-bit register count either resets to 0 if reset=1, increments by one modulo 16 when enable=1, or holds its previous value when enable=0 and reset=0.",
+  "edge_cases": [
+    "Wrap-around: when count reaches 4'b1111 and enable stays high with reset low, the next increment wraps count to 4'b0000.",
+    "Reset priority: reset overrides enable on the same clock edge, so count is cleared even if enable=1.",
+    "Hold behavior: when enable=0 and reset=0, count must remain unchanged across clock edges; no combinational glitches described."
+  ],
+  "state_transitions": [
+    "count=N -> count=0 on rising clk if reset=1 (N is any 0-15).",
+    "count=N -> count=(N+1) mod 16 on rising clk if reset=0 and enable=1.",
+    "count=N -> count=N on rising clk if reset=0 and enable=0."
+  ],
+  "priorities": [
+    "reset > enable > hold (implicit when both reset and enable asserted)."
+  ],
+  "output_behavior": {
+    "combinational_outputs": [],
+    "registered_outputs": [
+      "count"
+    ]
+  }
+}

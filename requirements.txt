@@ -1,0 +1,2 @@
+# No Python package dependencies are required for the Codex CLI backend.
+# Install Codex CLI separately in your shell environment.

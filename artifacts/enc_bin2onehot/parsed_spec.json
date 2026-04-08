@@ -1,0 +1,57 @@
+{
+  "module_name": "enc_bin2onehot",
+  "ports": [
+    {
+      "name": "clk",
+      "direction": "input",
+      "width": 1,
+      "type": "clock"
+    },
+    {
+      "name": "rst",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "in_valid",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "in",
+      "direction": "input",
+      "width": 4,
+      "type": "data"
+    },
+    {
+      "name": "out",
+      "direction": "output",
+      "width": 15,
+      "type": "data"
+    }
+  ],
+  "has_clock": true,
+  "clock_name": "clk",
+  "has_reset": true,
+  "reset_name": "rst",
+  "reset_type": "unspecified",
+  "is_sequential": false,
+  "behavior_summary": "When in_valid=1, the 4-bit in bus is interpreted as an integer 0\u201314 and the corresponding bit of the 15-bit out vector is set to 1 while all other bits are 0. When in_valid=0, the out vector is forced to 15'b0 regardless of in. clk and rst exist only for internal assertions and have no effect on the combinational encoding.",
+  "edge_cases": [
+    "in values above 14 (specifically 15) while in_valid=1 produce undefined behavior; the correct response is unspecified.",
+    "When in_valid=0, out is always zero even if in holds a valid value.",
+    "clk and rst do not gate or register outputs, so any assumption that they synchronize behavior would be incorrect."
+  ],
+  "state_transitions": [],
+  "priorities": [
+    "in_valid gating dominates: in_valid=0 forces out=0 regardless of in value."
+  ],
+  "output_behavior": {
+    "combinational_outputs": [
+      "out"
+    ],
+    "registered_outputs": []
+  }
+}

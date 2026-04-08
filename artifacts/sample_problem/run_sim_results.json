@@ -1,0 +1,66 @@
+{
+  "problem_dir": "sample_problem",
+  "tb_path": "tb/sample_problem_tb.v",
+  "score_info": {
+    "score": 1.0,
+    "num_passing": 1,
+    "num_failing": 5,
+    "num_compile_errors": 0,
+    "num_total": 6,
+    "correct_passed": true,
+    "passing_mutants": [
+      "mutant_0"
+    ],
+    "failing_mutants": [
+      "mutant_1",
+      "mutant_2",
+      "mutant_3",
+      "mutant_4",
+      "mutant_5"
+    ]
+  },
+  "simulation_results": [
+    {
+      "mutant_name": "mutant_0",
+      "compiled": true,
+      "passed": true,
+      "compile_error": "",
+      "sim_output": "VCD info: dumpfile counter_4bit_tb.vcd opened for output.\nPASS\ntb/sample_problem_tb.v:169: $finish called at 3075000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_1",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "VCD info: dumpfile counter_4bit_tb.vcd opened for output.\nFAIL: Cycle 11 reset=1 enable=1 expected=0 got=5\nFAIL: Cycle 12 reset=0 enable=0 expected=0 got=5\nFAIL: Cycle 13 reset=0 enable=1 expected=1 got=6\nFAIL: Cycle 14 reset=0 enable=1 expected=2 got=7\nFAIL: Cycle 15 reset=0 enable=1 expected=3 got=8\nFAIL: Cycle 16 reset=0 enable=1 expected=4 got=9\nFAIL: Cycle 17 reset=0 enable=1 expected=5 got=a\nFAIL: Cycle 18 reset=0 enable=1 expected=6 got=b\nFAIL: Cycle 19 reset=0 enable=1 expected=7 got=c\nFAIL: Cycle 20 reset=0 enable=1 expected=8 got=d\nFAIL: Cycle 21 reset=0 enable=1 expected=9 got=e\nFAIL: Cycle 22 reset=0 enable=1 expected=a got=f\nFAIL: 12 errors\ntb/sample_problem_tb.v:169: $finish called at 3075000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_2",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "VCD info: dumpfile counter_4bit_tb.vcd opened for output.\nFAIL: synchronous reset changed registered outputs before clock edge at 101000\ntb/sample_problem_tb.v:190: $finish called at 101000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_3",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "VCD info: dumpfile counter_4bit_tb.vcd opened for output.\nFAIL: Cycle 4 reset=0 enable=1 expected=1 got=f\nFAIL: Cycle 5 reset=0 enable=1 expected=2 got=e\nFAIL: Cycle 6 reset=0 enable=1 expected=3 got=d\nFAIL: Cycle 7 reset=0 enable=1 expected=4 got=c\nFAIL: Cycle 8 reset=0 enable=0 expected=4 got=c\nFAIL: Cycle 9 reset=0 enable=0 expected=4 got=c\nFAIL: Cycle 10 reset=0 enable=0 expected=4 got=c\nFAIL: Cycle 13 reset=0 enable=1 expected=1 got=f\nFAIL: Cycle 14 reset=0 enable=1 expected=2 got=e\nFAIL: Cycle 15 reset=0 enable=1 expected=3 got=d\nFAIL: Cycle 16 reset=0 enable=1 expected=4 got=c\nFAIL: Cycle 17 reset=0 enable=1 expected=5 got=b\nFAIL: Cycle 18 reset=0 enable=1 expected=6 got=a\nFAIL: Cycle 19 reset=0 enable=1 expected=7 got=9\nFAIL: Cycle 21 reset=0 enable=1 expected=9 got=7\nFAIL: Cycle 22 reset=0 enable=1 expected=a got=6\nFAIL: Cycle 26 reset=0 enable=1 expected=1 got=f\nFAIL: Cycle 27 reset=0 enable=1 expected=2 got=e\nFAIL: Cycle 28 reset=0 enable=1 expected=3 got=d\nFAIL: Cycle 29 reset=0 enable=1 expected=4 got=c\nFAIL: Cycle 32 reset=0 enable=1 expected=1 got=f\nFAIL: Cycle 33 reset=0 enable=1 expected=2 got=e\nFAIL: Cycle 34 reset=0 enable=1 expected=3 got=d\nFAIL: Cycle 35 reset=0 enable=1 expected=4 got=c\nFAIL: Cycle 36 reset=0 enable=1 expected=5 got=b\nFAIL: Cycle 37 reset=0 enable=1 expected=6 got=a\nFAIL: Cycle 38 reset=0 enable=1 expected=7 got=9\nFAIL: Cycle 40 reset=0 enable=1 expected=9 got=7\nFAIL: Cycle 41 reset=0 enable=1 expected=a got=6\nFAIL: Cycle 42 reset=0 enable=1 expected=b got=5\nFAIL: Cycle 43 reset=0 enable=1 expected=c got=4\nFAIL: Cycle 44 reset=0 enable=1 expected=d got=3\nFAIL: Cycle 45 reset=0 enable=1 expected=e got=2\nFAIL: Cycle 46 reset=0 enable=1 expected=f got=1\nFAIL: Cycle 48 reset=0 enable=1 expected=1 got=f\nFAIL: Cycle 49 reset=0 enable=1 expected=2 got=e\nFAIL: Cycle 50 reset=0 enable=1 expected=3 got=d\nFAIL: Cycle 51 reset=0 enable=0 expected=3 got=d\nFAIL: Cycle 52 reset=0 enable=0 expected=3 got=d\nFAIL: Cycle 53 reset=0 enable=0 expected=3 got=d\nFAIL: Cycle 54 reset=0 enable=0 expected=3 got=d\nFAIL: Cycle 55 reset=0 enable=0 expected=3 got=d\nFAIL: Cycle 58 reset=0 enable=1 expected=1 got=f\nFAIL: Cycle 59 reset=0 enable=1 expected=2 got=e\nFAIL: Cycle 60 reset=0 enable=1 expected=3 got=d\nFAIL: Cycle 61 reset=0 enable=1 expected=4 got=c\nFAIL: Cycle 62 reset=0 enable=1 expected=5 got=b\nFAIL: Cycle 63 reset=0 enable=1 expected=6 got=a\nFAIL: Cycle 64 reset=0 enable=1 expected=7 got=9\nFAIL: Cycle 65 reset=0 enable=0 expected=7 got=9\nFAIL: Cycle 66 reset=0 enable=0 expected=7 got=9\nFAIL: Cycle 69 reset=0 enable=1 expected=1 got=f\nFAIL: Cycle 70 reset=0 enable=1 expected=2 got=e\nFAIL: Cycle 71 reset=0 enable=1 expected=3 got=d\nFAIL: Cycle 72 reset=0 enable=1 expected=4 got=c\nFAIL: Cycle 73 reset=0 enable=1 expected=5 got=b\nFAIL: Cycle 74 reset=0 enable=1 expected=6 got=a\nFAIL: Cycle 75 reset=0 enable=1 expected=7 got=9\nFAIL: Cycle 77 reset=0 enable=1 expected=9 got=7\nFAIL: Cycle 78 reset=0 enable=1 expected=a got=6\nFAIL: Cy"
+    },
+    {
+      "mutant_name": "mutant_4",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "VCD info: dumpfile counter_4bit_tb.vcd opened for output.\nFAIL: Cycle 3 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 4 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 5 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 6 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 7 reset=0 enable=1 expected=4 got=5\nFAIL: Cycle 8 reset=0 enable=0 expected=4 got=6\nFAIL: Cycle 9 reset=0 enable=0 expected=4 got=7\nFAIL: Cycle 10 reset=0 enable=0 expected=4 got=8\nFAIL: Cycle 12 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 13 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 14 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 15 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 16 reset=0 enable=1 expected=4 got=5\nFAIL: Cycle 17 reset=0 enable=1 expected=5 got=6\nFAIL: Cycle 18 reset=0 enable=1 expected=6 got=7\nFAIL: Cycle 19 reset=0 enable=1 expected=7 got=8\nFAIL: Cycle 20 reset=0 enable=1 expected=8 got=9\nFAIL: Cycle 21 reset=0 enable=1 expected=9 got=a\nFAIL: Cycle 22 reset=0 enable=1 expected=a got=b\nFAIL: Cycle 24 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 25 reset=0 enable=0 expected=0 got=2\nFAIL: Cycle 26 reset=0 enable=1 expected=1 got=3\nFAIL: Cycle 27 reset=0 enable=1 expected=2 got=4\nFAIL: Cycle 28 reset=0 enable=1 expected=3 got=5\nFAIL: Cycle 29 reset=0 enable=1 expected=4 got=6\nFAIL: Cycle 31 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 32 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 33 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 34 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 35 reset=0 enable=1 expected=4 got=5\nFAIL: Cycle 36 reset=0 enable=1 expected=5 got=6\nFAIL: Cycle 37 reset=0 enable=1 expected=6 got=7\nFAIL: Cycle 38 reset=0 enable=1 expected=7 got=8\nFAIL: Cycle 39 reset=0 enable=1 expected=8 got=9\nFAIL: Cycle 40 reset=0 enable=1 expected=9 got=a\nFAIL: Cycle 41 reset=0 enable=1 expected=a got=b\nFAIL: Cycle 42 reset=0 enable=1 expected=b got=c\nFAIL: Cycle 43 reset=0 enable=1 expected=c got=d\nFAIL: Cycle 44 reset=0 enable=1 expected=d got=e\nFAIL: Cycle 45 reset=0 enable=1 expected=e got=f\nFAIL: Cycle 46 reset=0 enable=1 expected=f got=0\nFAIL: Cycle 47 reset=0 enable=1 expected=0 got=1\nFAIL: Cycle 48 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 49 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 50 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 51 reset=0 enable=0 expected=3 got=5\nFAIL: Cycle 52 reset=0 enable=0 expected=3 got=6\nFAIL: Cycle 53 reset=0 enable=0 expected=3 got=7\nFAIL: Cycle 54 reset=0 enable=0 expected=3 got=8\nFAIL: Cycle 55 reset=0 enable=0 expected=3 got=9\nFAIL: Cycle 57 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 58 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 59 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 60 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 61 reset=0 enable=1 expected=4 got=5\nFAIL: Cycle 62 reset=0 enable=1 expected=5 got=6\nFAIL: Cycle 63 reset=0 enable=1 expected=6 got=7\nFAIL: Cycle 64 reset=0 enable=1 expected=7 got=8\nFAIL: Cycle 65 reset=0 enable=0 expected=7 got=9\nFAIL: Cycle 66 reset=0 enable=0 expected=7 got=a\nFAIL: Cyc"
+    },
+    {
+      "mutant_name": "mutant_5",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "VCD info: dumpfile counter_4bit_tb.vcd opened for output.\nFAIL: Cycle 1 reset=1 enable=0 expected=0 got=1\nFAIL: Cycle 2 reset=1 enable=0 expected=0 got=1\nFAIL: Cycle 3 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 4 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 5 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 6 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 7 reset=0 enable=1 expected=4 got=5\nFAIL: Cycle 8 reset=0 enable=0 expected=4 got=5\nFAIL: Cycle 9 reset=0 enable=0 expected=4 got=5\nFAIL: Cycle 10 reset=0 enable=0 expected=4 got=5\nFAIL: Cycle 11 reset=1 enable=1 expected=0 got=1\nFAIL: Cycle 12 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 13 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 14 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 15 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 16 reset=0 enable=1 expected=4 got=5\nFAIL: Cycle 17 reset=0 enable=1 expected=5 got=6\nFAIL: Cycle 18 reset=0 enable=1 expected=6 got=7\nFAIL: Cycle 19 reset=0 enable=1 expected=7 got=8\nFAIL: Cycle 20 reset=0 enable=1 expected=8 got=9\nFAIL: Cycle 21 reset=0 enable=1 expected=9 got=a\nFAIL: Cycle 22 reset=0 enable=1 expected=a got=b\nFAIL: Cycle 23 reset=1 enable=1 expected=0 got=1\nFAIL: Cycle 24 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 25 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 26 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 27 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 28 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 29 reset=0 enable=1 expected=4 got=5\nFAIL: Cycle 30 reset=1 enable=0 expected=0 got=1\nFAIL: Cycle 31 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 32 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 33 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 34 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 35 reset=0 enable=1 expected=4 got=5\nFAIL: Cycle 36 reset=0 enable=1 expected=5 got=6\nFAIL: Cycle 37 reset=0 enable=1 expected=6 got=7\nFAIL: Cycle 38 reset=0 enable=1 expected=7 got=8\nFAIL: Cycle 39 reset=0 enable=1 expected=8 got=9\nFAIL: Cycle 40 reset=0 enable=1 expected=9 got=a\nFAIL: Cycle 41 reset=0 enable=1 expected=a got=b\nFAIL: Cycle 42 reset=0 enable=1 expected=b got=c\nFAIL: Cycle 43 reset=0 enable=1 expected=c got=d\nFAIL: Cycle 44 reset=0 enable=1 expected=d got=e\nFAIL: Cycle 45 reset=0 enable=1 expected=e got=f\nFAIL: Cycle 46 reset=0 enable=1 expected=f got=0\nFAIL: Cycle 47 reset=0 enable=1 expected=0 got=1\nFAIL: Cycle 48 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 49 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 50 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle 51 reset=0 enable=0 expected=3 got=4\nFAIL: Cycle 52 reset=0 enable=0 expected=3 got=4\nFAIL: Cycle 53 reset=0 enable=0 expected=3 got=4\nFAIL: Cycle 54 reset=0 enable=0 expected=3 got=4\nFAIL: Cycle 55 reset=0 enable=0 expected=3 got=4\nFAIL: Cycle 56 reset=1 enable=0 expected=0 got=1\nFAIL: Cycle 57 reset=0 enable=0 expected=0 got=1\nFAIL: Cycle 58 reset=0 enable=1 expected=1 got=2\nFAIL: Cycle 59 reset=0 enable=1 expected=2 got=3\nFAIL: Cycle 60 reset=0 enable=1 expected=3 got=4\nFAIL: Cycle"
+    }
+  ]
+}

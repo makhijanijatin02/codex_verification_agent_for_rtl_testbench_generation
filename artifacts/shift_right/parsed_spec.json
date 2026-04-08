@@ -1,0 +1,56 @@
+{
+  "module_name": "shift_right",
+  "ports": [
+    {
+      "name": "in",
+      "direction": "input",
+      "width": 50,
+      "type": "data"
+    },
+    {
+      "name": "shift",
+      "direction": "input",
+      "width": 3,
+      "type": "control"
+    },
+    {
+      "name": "fill",
+      "direction": "input",
+      "width": 5,
+      "type": "data"
+    },
+    {
+      "name": "out_valid",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "out",
+      "direction": "output",
+      "width": 50,
+      "type": "data"
+    }
+  ],
+  "has_clock": false,
+  "clock_name": null,
+  "has_reset": false,
+  "reset_name": null,
+  "reset_type": null,
+  "is_sequential": false,
+  "behavior_summary": "Purely combinational barrel shifter that treats its 50-bit input as 10 contiguous 5-bit symbols, shifts the symbol array toward lower indices by the 3-bit shift amount, fills vacated most-significant symbols with the provided 5-bit fill value, and asserts out_valid whenever the requested shift is in the supported 0\u20134 range.",
+  "edge_cases": [
+    "Shift values 0\u20134 inclusive are considered valid and produce a defined result; any shift above 4 forces out_valid low and the output data must be treated as invalid/unspecified.",
+    "When the shift amount would require more than 10 symbols, the specification does not define wraparound; vacated slots are filled with the supplied fill symbol and the remaining symbols that would index beyond the input range are effectively ignored.",
+    "A single fill symbol is replicated across all vacated most-significant positions; there is no per-position fill source."
+  ],
+  "state_transitions": [],
+  "priorities": [],
+  "output_behavior": {
+    "combinational_outputs": [
+      "out_valid",
+      "out"
+    ],
+    "registered_outputs": []
+  }
+}
