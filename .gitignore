@@ -1,2 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment / secrets
+.env
+
+# Scratch / temp files
+pdf_text.txt
+*.tmp
 ~.docx
 ~WRL*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
