@@ -218,7 +218,7 @@ python3 run_pipeline.py --problem-dir sample_problem --max-iters 1
 Example for a visible benchmark problem:
 
 ```bash
-python3 run_pipeline.py --problem-dir "/mnt/c/Users/makhi/OneDrive - Arizona State University/Mini_Project_2/phase2/ICLAD-Hackathon-2025/visible_problems/enc_bin2gray" --max-iters 1
+python3 run_pipeline.py --problem-dir /path/to/visible_problems/enc_bin2gray --max-iters 1
 ```
 
 ## How to Run the Hidden Testcases
