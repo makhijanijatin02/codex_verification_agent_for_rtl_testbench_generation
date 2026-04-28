@@ -267,18 +267,18 @@ The previous visible batch summary in `artifacts/batch_summary.md` reports:
 
 Representative results from that batch:
 
-| Problem | Score | Passing | Compile Errors |
-|---------|------:|--------:|---------------:|
-| `ecc_sed_encoder` | 1.0000 | 1/31 | 0 |
-| `enc_bin2gray` | 1.0000 | 1/31 | 0 |
-| `enc_bin2onehot` | 1.0000 | 1/31 | 0 |
-| `lfsr` | 1.0000 | 1/31 | 0 |
-| `shift_left` | 1.0000 | 1/31 | 0 |
-| `shift_right` | 1.0000 | 1/31 | 0 |
-| `counter` | 1.0000 in latest rerun | 1/31 | 0 |
-| `credit_receiver` | 1.0000 | 1/31 | 0 |
-| `fifo_flops` | 1.0000 | 1/31 | 0 |
-| `cdc_fifo_flops_push_credit` | 0.0000 | 0/31 | 0 |
+| Problem | Score | Correct Mutant Identified | Compile Errors |
+|---------|------:|:--------------------------|---------------:|
+| `ecc_sed_encoder` | 1.0000 | `mutant_18` | 0 |
+| `enc_bin2gray` | 1.0000 | `mutant_25` | 0 |
+| `enc_bin2onehot` | 1.0000 | `mutant_27` | 0 |
+| `lfsr` | 1.0000 | `mutant_29` | 0 |
+| `shift_left` | 1.0000 | `mutant_1` | 0 |
+| `shift_right` | 1.0000 | `mutant_9` | 0 |
+| `counter` | 1.0000 | `mutant_11` | 0 |
+| `credit_receiver` | 1.0000 | `mutant_18` | 0 |
+| `fifo_flops` | 1.0000 | `mutant_23` | 0 |
+| `cdc_fifo_flops_push_credit` | 0.0000 | None | 0 |
 
 ### Selected-Problem Presentation View
 
