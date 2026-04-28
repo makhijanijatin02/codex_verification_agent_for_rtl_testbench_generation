@@ -393,7 +393,7 @@ If you need to present this work, the clean story is:
 ## One-Line Demo Command
 
 ```bash
-python3 run_pipeline.py --problem-dir "/mnt/c/Users/makhi/OneDrive - Arizona State University/Mini_Project_2/phase2/ICLAD-Hackathon-2025/visible_problems/enc_bin2gray" --max-iters 1
+python3 run_pipeline.py --problem-dir sample_problem --max-iters 1
 ```
 
-That command is currently one of the cleanest ways to show the system working end to end.
+This command runs the full pipeline end to end on the included sample problem.
