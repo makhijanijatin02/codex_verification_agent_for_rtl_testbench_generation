@@ -114,6 +114,8 @@ This is the foundation for better testbench generation.
 
 ### 2. Oracle-style selection
 
+*(For a detailed breakdown of what an Oracle is and how these terms are defined, please see our [Verification Terminology Guide](docs/terminology.md))*
+
 Each problem is pushed into one of three reasoning modes:
 
 - `formula`
