@@ -390,6 +390,11 @@ def find_protocol_testbench_issues(verilog_code: str, parsed_spec: dict, test_pl
             "completed pops exceeded credit pulses",
             "observed more push_credit pulses than completed pops",
             "push_credit pulse wider than one push_clk cycle",
+            "credit_edges",
+            "observed_credit_pulses",
+            "pending_credits",
+            "last_push_credit",
+            "prev_push_credit",
             "pop_valid not cleared by registered pop_rst",
             "wrong readable data before asserting pop_rst",
             "pop_valid should be low after reset settling",
@@ -421,6 +426,8 @@ def find_protocol_testbench_issues(verilog_code: str, parsed_spec: dict, test_pl
             issues.append("cdc bench compares aggregate credit pulses against aggregate pop handshakes")
         if "prev_push_credit" in lower and "push_credit" in lower:
             issues.append("cdc bench monitors push_credit as if it must be a one-cycle pulse")
+        if any(name in lower for name in ("credit_edges", "observed_credit_pulses", "pending_credits")):
+            issues.append("cdc bench uses aggregate credit-accounting state instead of legality/eventuality checks")
 
         push_reset_body = _section_body("// push_reset_idle_checks", "// pop_reset_idle_checks")
         if (

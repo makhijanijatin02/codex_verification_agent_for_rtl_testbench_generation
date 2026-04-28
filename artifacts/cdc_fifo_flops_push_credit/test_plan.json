@@ -2,267 +2,215 @@
   "module_type": "sequential",
   "oracle_style": "protocol_invariant",
   "exhaustive_possible": false,
-  "total_input_bits": 25,
+  "total_input_bits": 26,
   "safe_checks": [
-    "After a qualifying push_clk edge with write-side reset intent active, normal write-side operation is reset-blocked because push_rst and push_sender_in_reset form the write-side reset condition and reset overrides writes.",
-    "After a qualifying pop_clk edge with pop-side reset active, normal read-side dequeue behavior is reset-blocked because pop_rst overrides pop-side operation.",
-    "Because push_rst and pop_rst are synchronous and internally registered, strict reset-state checks must be made only after the one-cycle delayed reset effect in the corresponding clock domain, not immediately when reset is driven high.",
-    "push_receiver_in_reset must indicate write-side reset state when the write side is in reset.",
-    "A pop transaction is counted only on a pop_clk edge where pop_valid && pop_ready is high.",
-    "If pop_valid is high and pop_ready is low across consecutive pop_clk cycles, pop_data must remain unchanged and the held item must not be removed.",
-    "The sequence of completed pop handshakes must equal the sequence of accepted pushed data values in strict FIFO order.",
-    "No value may be popped more times than it was accepted, and accepted values may not disappear without a matching pop handshake.",
-    "push_full indicates no available space, so once the design is observably full the testbench may strictly require that additional pushes are not treated as newly accepted until space is freed.",
-    "pop_empty indicates no data available, so in stable empty states after reset/drain it is safe to require pop_empty=1.",
-    "A successful pop eventually corresponds to exactly one one-cycle push_credit pulse in the push_clk domain unless pulse emission is being stalled by push_credit_stall.",
-    "While push_credit_stall is high, absence of push_credit pulses is allowed, but the cumulative number of observed push_credit pulses must never exceed the number of completed pops.",
-    "When valid data is persistently offered to the pop side and not consumed, the same pop_data value must continue to be offered until the handshake completes."
+    "After a qualifying push-domain clock edge and the specified one-cycle local reset-registration delay, asserting either push_rst=1 or push_sender_in_reset=1 must place the write side in reset and push_receiver_in_reset must indicate that reset state.",
+    "After a qualifying pop-domain clock edge and the specified one-cycle local reset-registration delay, asserting pop_rst=1 must place the read side in reset; no normal dequeue obligation should be enforced while the read side is in reset.",
+    "While the write side is in reset, pushes must not be treated as accepted writes.",
+    "A pop completes only on a pop_clk edge where pop_valid=1 and pop_ready=1.",
+    "No item may be popped unless it was previously accepted on the push side.",
+    "Accepted items must be popped in FIFO order with no duplication and no skipping.",
+    "When pop_valid=1 and pop_ready=0, pop_data must remain stable and the identity of the next item to be popped must remain unchanged until a later successful pop handshake or reset.",
+    "push_credit must never pulse unless there was a prior successful pop handshake.",
+    "Each successful pop handshake may produce at most one returned push_credit pulse in the push clock domain.",
+    "When push_credit_stall=1, immediate credit pulse generation is blocked; therefore the testbench must not require a credit pulse during stalled intervals.",
+    "push_full and pop_empty are legal status indicators for no-space / no-data conditions, but their exact transition cycles must be treated cautiously because remote-pointer visibility is synchronized across domains.",
+    "Occupancy-related exposed values must remain within the representable range 0 through 17 when they are checked in clearly stable states."
   ],
   "unsafe_checks": [
-    "Do not strictly require push_valid alone to imply write acceptance under all credit/full conditions.",
-    "Do not strictly require a fixed push_clk latency from pop handshake to push_credit pulse.",
-    "Do not strictly require delayed credits during push_credit_stall to replay after an exact number of cycles.",
-    "Do not strictly require exact values or exact cycle-by-cycle updates of push_slots, credit_count_push, credit_available_push, or pop_items.",
-    "Do not strictly require exact cut-through timing of pop_valid or pop_data across asynchronous push/pop clock interactions.",
-    "Do not strictly require pop_empty to be the exact logical inverse of pop_valid in all boundary and cut-through situations.",
-    "Do not strictly require exact full/empty/status behavior during simultaneous push/pop activity when synchronizer lag may exist.",
-    "Do not strictly require exact arithmetic semantics of credit_available_push when credit_withhold_push exceeds credit_count_push.",
-    "Do not strictly require push_receiver_in_reset to assert or deassert combinationally with reset intent before the qualifying push_clk edge.",
-    "Do not strictly require writes attempted while full to be ignored versus stalled versus otherwise handled, beyond checking that no new accepted data enters the FIFO ordering stream.",
-    "Do not strictly require same-cycle reset-output behavior when reset overlaps active transfers beyond the delayed synchronous-reset rule.",
-    "Do not strictly require exact remote-domain visibility timing for pop_empty, push_full, or any CDC-derived counter/status output."
+    "Do not strictly assert an exact cycle latency from a push-side write to pop_valid/pop_data visibility.",
+    "Do not strictly assert same-cycle cut-through from push_valid/push_data to pop_valid/pop_data when the FIFO is empty.",
+    "Do not strictly assert an exact cycle latency from a successful pop to push_credit pulse assertion.",
+    "Do not strictly assert exact cycle-by-cycle values of push_full or pop_empty around CDC boundary crossings.",
+    "Do not strictly assert exact cycle-by-cycle arithmetic values for push_slots, credit_count_push, credit_available_push, or pop_items across domains.",
+    "Do not strictly assert any particular saturation, wraparound, or signedness behavior for credit_available_push when credit_withhold_push exceeds credit_count_push.",
+    "Do not strictly assert acceptance or rejection behavior for illegal push_valid attempts when the FIFO is full unless acceptance is externally observable through later ordered pops.",
+    "Do not strictly assert combinational reset effects before the qualifying local clock edge plus the stated one-cycle delayed internal effect.",
+    "Do not strictly assert pop_valid=0 or a specific pop_data value in empty-edge cut-through situations where no successful pop occurs and the exact preview timing is unspecified.",
+    "Do not strictly assert exact pointer-synchronizer timing or any internal CDC implementation detail."
   ],
   "minimal_safe_oracle": [
-    "Reset layer: verify one-cycle-delayed synchronous reset behavior separately in push and pop domains, including that push_sender_in_reset participates in the write-side reset condition and that push_receiver_in_reset indicates reset state after the qualifying push_clk edge.",
-    "FIFO ordering layer: build a reference queue from accepted writes under clearly non-full conditions and require that each completed pop handshake returns the oldest queued byte in order.",
-    "Backpressure layer: once a value is visible with pop_valid=1, hold pop_ready=0 for multiple pop_clk cycles and strictly require pop_data stability and no dequeue until pop_ready returns high.",
-    "Empty/drain layer: after draining all previously accepted data and allowing state to settle, require stable empty indication through pop_empty=1 and no further completed pops without a new accepted push.",
-    "Credit safety layer: count completed pops and observed push_credit pulses, require each pulse to be exactly one push_clk cycle wide, require pulses never to outnumber pops, and allow arbitrary delay especially while push_credit_stall=1."
+    "Reset oracle: verify one-local-clock delayed synchronous reset behavior on each domain, including that push_sender_in_reset participates in the push-side reset condition and that pushes during push-side reset are ignored.",
+    "Queue oracle: maintain a reference queue of definitely accepted writes and require every successful pop handshake to return the oldest queued byte, with no duplicates, skips, or spontaneous pops.",
+    "Backpressure oracle: once pop_valid=1 and pop_ready=0, require pop_data to stay unchanged and forbid dequeue progress until a later successful pop handshake or reset.",
+    "Credit oracle: count successful pops and observed push_credit pulses; strictly require no credit without a prior pop and no more than one credit pulse per pop, then require one-for-one eventual correspondence only over long unstalled windows without imposing fixed latency."
   ],
   "reset_tests": [
     {
-      "description": "Push-domain synchronous reset timing. Start idle with push_valid=0, pop_ready=0, push_sender_in_reset=0. Drive push_rst=1 before a push_clk edge and verify that write-side reset effects are checked only after the next push_clk edge, not immediately. After that qualifying edge, require push_receiver_in_reset to indicate reset and treat pushes as blocked.",
-      "cycles": 3
-    },
-    {
-      "description": "Write-side reset via push_sender_in_reset OR path. Keep push_rst=0, assert push_sender_in_reset=1 across a push_clk edge, and verify the same reset-blocked behavior and reset indication as for push_rst. This discriminates mutants that ignore push_sender_in_reset or fail to OR it with push_rst.",
-      "cycles": 3
-    },
-    {
-      "description": "Pop-domain synchronous reset timing. After previously making data available, drive pop_rst=1 before a pop_clk edge and verify strict reset checks only after the next pop_clk edge. Do not require immediate clearing on assertion. After the qualifying edge, do not expect normal dequeue behavior until reset clears.",
-      "cycles": 3
-    },
-    {
-      "description": "Reset priority over normal operation. Present push_valid=1 with nonzero push_data while asserting push_rst or push_sender_in_reset through the qualifying push_clk edge, and separately present pop_ready=1 while asserting pop_rst through the qualifying pop_clk edge. Strict expectation is reset blocking, not transfer completion.",
+      "description": "Push-domain synchronous reset delay with idle interfaces. Hold push_valid=0 and pop_ready=0. Drive push_rst=1, tick push_clk once, then check that the reset effect is not required until after the stated internal one-cycle delay; after the delayed effect, require push_receiver_in_reset=1 and require that any pushes attempted while reset remains active are not later observable as popped data.",
       "cycles": 4
     },
     {
-      "description": "Reset deassert sequencing. Deassert push_rst and push_sender_in_reset, then allow one additional push_clk edge before relying on normal push-side behavior. Likewise deassert pop_rst and allow one additional pop_clk edge before relying on normal pop-side behavior. This targets mutants that clear reset too early or too late.",
-      "cycles": 4
+      "description": "push_sender_in_reset must behave like push-side reset. Keep push_rst=0, assert push_sender_in_reset=1, hold push_valid=0 and pop_ready=0, advance push_clk, then after the delayed effect require push_receiver_in_reset=1. While push_sender_in_reset stays high, attempt one or more pushes and later verify they never emerge on the pop side.",
+      "cycles": 6
+    },
+    {
+      "description": "Push-side reset release. Deassert both push_rst and push_sender_in_reset, wait through the local reset-registration delay, then perform a small write sequence and verify those post-release writes can later be observed in FIFO order on the pop side.",
+      "cycles": 8
+    },
+    {
+      "description": "Pop-domain synchronous reset delay. Prefill the FIFO with known data first, then assert pop_rst=1 while pop_ready=0, tick pop_clk, and only after the delayed internal reset effect stop applying strict normal-dequeue expectations. After deasserting pop_rst and waiting through the delay, verify subsequent pop handshakes again follow FIFO ordering for data written after reset release.",
+      "cycles": 8
+    },
+    {
+      "description": "Independent-domain reset interaction. Reset only the push side while leaving the pop side active, and separately reset only the pop side while leaving the push side active. Strictly check only local reset obligations, queue legality, and absence of impossible pops; avoid exact status/latency checks during cross-domain recovery.",
+      "cycles": 12
     }
   ],
   "normal_tests": [
     {
-      "description": "Single push then single pop in quiescent conditions. Use credit configuration that should not artificially restrict capacity, keep push_credit_stall=0, push one byte while not full, then later assert pop_ready when data is available. Expect one completed pop with exactly the pushed byte.",
+      "description": "Single write then single read with independent clocks. Write one byte A5 on push side after reset release, wait until pop_valid becomes true, then perform one pop handshake and require pop_data=A5 on the handshake cycle. Track that exactly one queue element was removed.",
+      "vectors": [
+        {
+          "push_data": "0xA5",
+          "push_valid_pattern": "one accepted push pulse",
+          "pop_ready_pattern": "assert only after pop_valid observed",
+          "expected": "one successful pop returns 0xA5"
+        }
+      ]
+    },
+    {
+      "description": "Multiple writes then multiple reads in FIFO order. Push a short ordered sequence such as 11, 22, 33, 44 under push_clk, then later pop them one by one under pop_clk and require the same order at the successful pop handshakes.",
       "vectors": [
         {
           "push_sequence": [
-            {
-              "push_valid": 1,
-              "push_data": "0x3C"
-            }
-          ],
-          "pop_sequence": [
-            {
-              "pop_ready": 1,
-              "expected_popped_data": "0x3C"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "description": "Multi-item FIFO ordering with no overlap. Push four distinct bytes in order, then pop four times after they are all known accepted. Expect exact order preservation.",
-      "vectors": [
-        {
-          "accepted_push_bytes": [
             "0x11",
             "0x22",
-            "0x44",
-            "0x88"
+            "0x33",
+            "0x44"
           ],
-          "expected_pop_order": [
+          "pop_sequence_expected": [
             "0x11",
             "0x22",
-            "0x44",
-            "0x88"
+            "0x33",
+            "0x44"
           ]
         }
       ]
     },
     {
-      "description": "Backpressure hold behavior. Make one item available to the pop side, then keep pop_ready=0 across multiple pop_clk cycles while pop_valid remains asserted. Require pop_data to remain constant and the item to be returned exactly once when pop_ready is finally raised.",
+      "description": "Interleaved push/pop traffic with unrelated clock ratios. Alternate bursts of pushes and pops while maintaining a reference queue. This separates CDC ordering bugs from simple single-burst behavior.",
       "vectors": [
         {
-          "accepted_push_bytes": [
-            "0xA5"
+          "push_sequence": [
+            "0x10",
+            "0x20",
+            "0x30",
+            "0x40",
+            "0x50"
           ],
-          "hold_cycles_with_pop_ready_0": 3,
-          "expected_stable_pop_data": "0xA5",
-          "expected_pop_order_after_release": [
-            "0xA5"
-          ]
+          "clock_ratio_examples": [
+            "push faster than pop",
+            "pop faster than push",
+            "near-equal clocks"
+          ],
+          "expected": "all successful pops match the oldest accepted outstanding write"
         }
       ]
     },
     {
-      "description": "Drain to empty and verify no extra output item appears. Push two bytes, pop both, then continue toggling pop_clk with pop_ready=1 for several cycles. Expect exactly two completed pops and no third phantom dequeue.",
+      "description": "Backpressure hold. Make pop_valid become high for a known head item, then hold pop_ready=0 across several pop_clk cycles. Strictly require pop_data to remain constant and require no dequeue progress until pop_ready is finally asserted.",
       "vectors": [
         {
-          "accepted_push_bytes": [
+          "prefill_sequence": [
             "0x5A",
             "0xC3"
           ],
-          "expected_pop_order": [
-            "0x5A",
-            "0xC3"
-          ],
-          "post_drain_extra_pop_cycles": 3
+          "stall_cycles": 3,
+          "expected": "0x5A remains presented throughout stall; first successful pop returns 0x5A, second later returns 0xC3"
         }
       ]
     },
     {
-      "description": "Credit pulse basic legality. Perform two successful pops with push_credit_stall=0 and observe push_clk long enough afterward. Expect exactly two one-cycle push_credit pulses eventually, with no pulse count exceeding completed pop count at any earlier time.",
+      "description": "Credit generation without fixed latency. Perform K successful pops with push_credit_stall=0 for a long unstalled interval afterward. Strictly require no push_credit before any pop, no more than K total pulses attributable to those pops, and eventual total observed pulses equals K by the end of the observation window.",
       "vectors": [
         {
-          "num_successful_pops": 2,
-          "push_credit_stall": 0,
-          "required_checks": [
-            "pulse_width_is_one_push_clk",
-            "cumulative_pulses_never_exceed_pops",
-            "eventual_pulse_count_equals_pop_count"
-          ]
+          "successful_pops": 3,
+          "observation_window_push_cycles": 20,
+          "expected": "exactly 3 total push_credit pulses observed by end of long unstalled window, with no fixed-cycle placement required"
         }
       ]
     }
   ],
   "corner_case_tests": [
     {
-      "description": "Depth boundary at 17 entries. In a no-pop phase, attempt to push 17 distinct bytes under permissive credit configuration, then attempt an 18th push. Strictly check ordering of the first 17 bytes when later popped and require that the 18th attempted write does not appear as an extra accepted item before space is freed. This targets 16-versus-17 depth bugs and off-by-one full handling.",
+      "description": "Data boundary patterns. Use all-zeros, all-ones, alternating, and walking-edge values to catch wrong bit slicing or stale-data bugs.",
+      "vectors": [
+        "0x00",
+        "0xFF",
+        "0xAA",
+        "0x55",
+        "0x01",
+        "0x80",
+        "0x7F",
+        "0xFE"
+      ]
+    },
+    {
+      "description": "Depth-boundary stress near 0, 16, and 17 entries. Fill with 16 items, then 17 items, then drain back to 1 and 0 using long observation windows. Strictly check FIFO order and absence of duplication/loss; use push_full/pop_empty only as secondary stable-state checks after waiting for CDC settling.",
       "vectors": [
         {
-          "accepted_push_bytes": [
-            "0x00",
-            "0x01",
-            "0x02",
-            "0x03",
-            "0x04",
-            "0x05",
-            "0x06",
-            "0x07",
-            "0x08",
-            "0x09",
-            "0x0A",
-            "0x0B",
-            "0x0C",
-            "0x0D",
-            "0x0E",
-            "0x0F",
-            "0x10"
+          "occupancy_targets": [
+            0,
+            1,
+            16,
+            17
           ],
-          "extra_attempted_push_byte": "0xEE",
-          "expected_pop_order": [
-            "0x00",
-            "0x01",
-            "0x02",
-            "0x03",
-            "0x04",
-            "0x05",
-            "0x06",
-            "0x07",
-            "0x08",
-            "0x09",
-            "0x0A",
-            "0x0B",
-            "0x0C",
-            "0x0D",
-            "0x0E",
-            "0x0F",
-            "0x10"
+          "expected": "ordered delivery for all accepted items; optional stable-state check after settling: full at 17, empty at 0"
+        }
+      ]
+    },
+    {
+      "description": "Attempted overfill scenario. After reaching an apparently full stable condition and waiting extra synchronization time, continue pulsing push_valid with distinct data. Do not strictly assume whether illegal pushes are accepted immediately at the interface; instead discriminate by checking that later successful pops never exceed FIFO capacity worth of accepted items and preserve order of definitely accepted data.",
+      "vectors": [
+        {
+          "fill_data": "17 distinct bytes",
+          "extra_push_data": [
+            "0xE1",
+            "0xE2",
+            "0xE3"
           ]
         }
       ]
     },
     {
-      "description": "Boundary transition 0 to 1 to 0. Starting from a drained stable empty state, push one byte, hold it under backpressure for several pop_clk cycles, then consume it and return to empty. Safe strict checks are FIFO ordering, hold stability, and stable empty indication after drain; avoid same-cycle cut-through truth-table assumptions.",
+      "description": "Empty-side behavior under pop_ready activity. With no previously accepted data and after a long empty-settling period, toggle pop_ready for multiple pop_clk edges. Strictly require that no pop handshake is counted unless pop_valid is actually high, and require no credit pulses attributable to readiness alone.",
       "vectors": [
         {
-          "accepted_push_bytes": [
-            "0x7E"
+          "pop_ready_pattern": [
+            1,
+            0,
+            1,
+            1,
+            0,
+            1
           ],
-          "hold_cycles_with_pop_ready_0": 2,
-          "expected_pop_order": [
-            "0x7E"
-          ]
+          "expected": "no queue removal and no credit without a true pop_valid&&pop_ready handshake"
         }
       ]
     },
     {
-      "description": "Overlapping push and pop activity on independent clocks. Interleave pushes and pops with relatively prime push_clk and pop_clk periods so operations overlap. Strict check is that completed pop order exactly matches accepted push order with no duplication or loss.",
+      "description": "Credit stall behavior. Perform several successful pops while push_credit_stall=1 during the likely return interval, then release stall. Strictly require no push_credit pulse while stall is asserted and no more than one pulse per pop overall. Treat exact deferred replay timing and whether deferred credits are replayed versus suppressed as ambiguous unless the implementation makes it externally clear over a long window.",
       "vectors": [
         {
-          "push_clk_period": 10,
-          "pop_clk_period": 14,
-          "accepted_push_bytes": [
-            "0x12",
-            "0x34",
-            "0x56",
-            "0x78",
-            "0x9A"
-          ],
-          "expected_pop_order": [
-            "0x12",
-            "0x34",
-            "0x56",
-            "0x78",
-            "0x9A"
-          ]
+          "successful_pops": 2,
+          "stall_push_cycles": 8,
+          "post_release_observation_cycles": 20
         }
       ]
     },
     {
-      "description": "Credit stall gating. Complete several pops while push_credit_stall=1 and observe that push_credit pulses may be absent during stall. Then deassert stall and continue observing. Safe strict checks: no pulses during stall are acceptable, cumulative pulses must never exceed completed pops, and eventual replay timing must not be fixed by the checker.",
+      "description": "Reset overlap with queued data. Queue a few items, then assert push-side reset or pop-side reset mid-stream. Strictly require reset-local behavior, discard any pre-reset exact latency expectations, and after reset release verify clean post-reset operation with newly written data only.",
       "vectors": [
         {
-          "num_successful_pops_during_stall": 3,
-          "stall_release_after_push_clks": 5,
-          "required_checks": [
-            "no_strict_fixed_latency",
-            "cumulative_pulses_never_exceed_pops",
-            "pulse_width_is_one_push_clk"
-          ]
-        }
-      ]
-    },
-    {
-      "description": "Data pattern boundaries for storage and stale-output bugs. Use all-zeros, all-ones, alternating, and high-bit-only bytes in one run to catch bit-slice, stale-data, and wrong-source mutants.",
-      "vectors": [
-        {
-          "accepted_push_bytes": [
-            "0x00",
-            "0xFF",
-            "0xAA",
-            "0x55",
-            "0x80",
-            "0x01"
+          "pre_reset_data": [
+            "0x31",
+            "0x32",
+            "0x33"
           ],
-          "expected_pop_order": [
-            "0x00",
-            "0xFF",
-            "0xAA",
-            "0x55",
-            "0x80",
-            "0x01"
+          "post_reset_data": [
+            "0x91",
+            "0x92"
           ]
         }
       ]
@@ -270,41 +218,44 @@
   ],
   "sequence_tests": [
     {
-      "description": "Full reset-to-run traversal in both domains. Sequence: idle, assert push_rst, verify delayed push reset state, deassert and recover; push data; assert pop_rst while data exists, verify delayed pop reset state, deassert and recover; then consume data. This exposes wrong reset edge, missing internal registration, and reset priority mistakes.",
-      "num_cycles": 20
-    },
-    {
-      "description": "Fill, partial drain, refill, full drain. Push to near/full capacity, pop a subset, push additional bytes, then drain completely. The expected-state trace for the reference queue is explicit at each accepted push and pop. This is the primary sequence for depth off-by-one, pointer wrap, and ordering bugs.",
-      "num_cycles": 80
-    },
-    {
-      "description": "Backpressure persistence sequence. Push three bytes, allow first byte to become visible, hold pop_ready=0 for several pop_clk cycles, then release for one pop, hold again on the second byte, then fully drain. The explicit expected trace is that each held front item remains unchanged until its handshake and that later items do not advance early.",
+      "description": "Full ordered-traffic traversal across both domains. Release resets, push 6 distinct bytes, pop 2, push 4 more, stall consumer for several cycles while head item is visible, then pop the remainder. Maintain an explicit reference queue and require every successful pop to match queue head. This sequence exposes stale outputs, wrong dequeue edge, ordering bugs, and backpressure violations.",
       "num_cycles": 40
     },
     {
-      "description": "Credit accounting sequence without fixed latency assumptions. Perform a known number of successful pops under no stall, then another group under stall, then release stall. Track only the relation between completed pops and observed one-cycle push_credit pulses. This catches credits-on-push, duplicate-credit, missing-stall-gating, and never-returned-credit mutants.",
+      "description": "Clock-ratio sweep sequence. Repeat the same push/pop script under three regimes: push_clk faster than pop_clk, pop_clk faster than push_clk, and relatively prime clocks. Use the same queue oracle and credit counter oracle. This targets CDC bugs that only appear for specific phase relationships.",
       "num_cycles": 60
     },
     {
-      "description": "Asynchronous overlap stress sequence. Use mismatched clocks, alternate bursts of push_valid and pop_ready, and include occasional independent resets separated by recovery windows. Maintain an explicit transaction queue and verify only guaranteed invariants: ordering, no loss, no duplication, held data stability, and reset blocking after the qualifying edge.",
-      "num_cycles": 120
+      "description": "Near-full then drain sequence. Push until 17 accepted items are believed resident after long settling, optionally observe stable full indication, then pop all 17 while checking exact data order on each handshake and eventual return to an empty stable condition after settling. This targets off-by-one depth bugs at 16/17 and missing last-item behavior.",
+      "num_cycles": 80
+    },
+    {
+      "description": "Hold-then-release head item sequence. Arrange for one item to be visible at the pop side, keep pop_ready=0 for multiple pop_clk edges, then pulse unrelated pushes in the other domain, and finally release pop_ready. Strictly require the held head item to remain the next item popped despite unrelated push activity.",
+      "num_cycles": 30
+    },
+    {
+      "description": "Credit accounting sequence. Pop N known items with push_credit_stall toggled through phases 0,1,0. Count successful pops and credit pulses over a long run. Strictly require no credit without prior pop, no more than one credit per pop, and no pulses during the stalled phase. Use the final pulse count over a generous unstalled tail as the discriminator rather than any specific return latency.",
+      "num_cycles": 70
+    },
+    {
+      "description": "Reset-state transition sequence. Exercise push_rst assertion/deassertion, push_sender_in_reset assertion/deassertion, and pop_rst assertion/deassertion at different times while otherwise idle first, then with queued traffic. The expected-state trace is local-domain only: each reset takes effect after a local clock plus one-cycle internal delay, overrides normal local behavior while active, and post-release operation resumes only after the delay.",
+      "num_cycles": 50
     }
   ],
   "random_tests": {
     "num_vectors": 200,
-    "description": "Constrained-random dual-clock test with random push_valid, pop_ready, push_data, push_credit_stall, occasional push_rst, occasional pop_rst, and occasional push_sender_in_reset. Use independent randomized push_clk/pop_clk phase relationships. Score only safe invariants: delayed synchronous reset handling, FIFO order of accepted transactions, no dequeue without pop_valid&&pop_ready, pop_data stability under backpressure, no duplication/loss, one-cycle push_credit pulse width, and cumulative push_credit pulses never exceeding completed pops. Bias generation toward boundary occupancy regions near empty and near 17 entries, long pop_ready=0 stalls, and repeated data values mixed with distinct bytes."
+    "description": "Randomized dual-clock protocol test with constrained stimulus. Randomize push_valid, pop_ready, push_data, push_credit_stall, occasional push_sender_in_reset pulses, occasional push_rst/pop_rst pulses, and independent push/pop clock periods or phase offsets. Maintain only the safe oracle: local delayed-reset blocking, reference queue ordering on successful pops, pop_data stability under backpressure, and credit pulse count implications without fixed latency. Bias random generation toward long backpressure streaks, bursts near full/empty boundaries, and repeated data values to catch stale-output and duplicate-pop mutants."
   },
   "key_discriminators": [
-    "push_sender_in_reset must participate in the write-side reset OR path; a mutant that keys only on push_rst will fail the dedicated reset-origin test.",
-    "Reset effects are delayed by one domain clock because resets are synchronous and internally registered; asynchronous-reset or zero-latency-reset mutants will fail.",
-    "The FIFO depth is 17, not 16; the fill-to-17 then attempt-18 scenario separates correct capacity handling from common off-by-one full bugs.",
-    "Completed pop order must exactly match accepted push order under independent clocks; pointer or CDC ordering bugs fail the overlap sequences.",
-    "When pop_valid=1 and pop_ready=0, pop_data must hold constant and the item must not be removed; mutants with stale-output advancement or premature dequeue fail.",
-    "push_credit is caused by successful pops, not by pushes; credits-on-write mutants fail the credit accounting sequence.",
-    "push_credit_stall must suppress or pause credit pulse emission; mutants that ignore stall or emit pulses continuously fail.",
-    "Each push_credit pulse must be one push_clk cycle wide; stuck-high or multi-cycle credit pulse mutants fail without assuming any fixed return latency.",
-    "After draining all accepted data, no extra pop may occur; duplication, phantom-data, and failed-empty-handling mutants fail.",
-    "Using diverse byte patterns such as 0x00, 0xFF, 0xAA, 0x55, 0x80, and 0x01 exposes wrong bit slicing, inversion, and stale-data selection bugs.",
-    "The plan deliberately avoids exact cycle checks for cut-through timing and CDC-derived counters, reducing false failures from ambiguous spec areas while still discriminating protocol-breaking mutants."
+    "push_sender_in_reset must keep the write side in reset just like push_rst; mutants that ignore it will leak writes that later pop out.",
+    "Reset effects are synchronous and locally delayed by one cycle; mutants that reset immediately, asynchronously, or with wrong polarity will fail the reset sequences.",
+    "A dequeue occurs only on pop_valid&&pop_ready at pop_clk; mutants that advance on pop_ready alone or on pop_valid alone will fail empty-side and backpressure tests.",
+    "Under pop_valid&& !pop_ready, pop_data must stay stable and the head item must not change; this catches stale-state advancement and data-loss bugs.",
+    "FIFO ordering across interleaved dual-clock traffic is the primary discriminator for pointer, wraparound, and wrong-edge bugs.",
+    "Near-full and full-depth sequences at 16 and 17 entries target off-by-one full/occupancy logic without overspecifying exact status timing.",
+    "Credit checking should be count-based and latency-insensitive; this catches extra-credit, missing-credit, and credit-on-ready bugs without assuming exact CDC timing.",
+    "Using long unstalled tails after pops separates legitimate delayed credit return from implementations that never return credits.",
+    "Holding a visible head item while new pushes occur distinguishes proper pop-side retention from designs that incorrectly preview or overwrite the head under backpressure.",
+    "Stable-state optional checks after generous settling can catch obvious broken push_full/pop_empty implementations while avoiding ambiguous CDC-edge timing."
   ]
 }

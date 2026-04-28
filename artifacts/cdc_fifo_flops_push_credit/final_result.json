@@ -2,7 +2,7 @@
   "problem_name": "cdc_fifo_flops_push_credit",
   "best_score": 0.0,
   "iterations_used": 3,
-  "total_time_seconds": 1980.7863729000092,
+  "total_time_seconds": 1700.9851818084717,
   "num_mutants": 31,
   "testbench_path": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v",
   "artifacts_dir": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/artifacts/cdc_fifo_flops_push_credit",

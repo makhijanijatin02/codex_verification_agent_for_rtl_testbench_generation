@@ -66,6 +66,7 @@ RULES:
   - exact one-pulse-per-pop accounting
   - any comparison between total observed `push_credit` pulses and total completed pop handshakes
   - any assertion that `push_credit` must be only one `push_clk` cycle wide
+  - any testbench-side aggregate credit accounting variables such as `observed_credit_pulses`, `credit_edges`, `pending_credits`, or comparisons between credit observations and completed pops
   - bounded CDC wait loops
 - For `cdc_fifo_flops_push_credit`, prefer:
   - reset blocking behavior
@@ -77,6 +78,7 @@ RULES:
   - FIFO ordering
   - fill/drain end behavior
   - stall blocking of `push_credit`
+- For `cdc_fifo_flops_push_credit`, model `push_credit` the same way the simpler solved `credit_receiver` testbench does: check reset/stall legality and eventual post-pop observability only, without pulse-shape or total-count scoreboards.
 - For `cdc_fifo_flops_push_credit`, rewrite `PUSH_RESET_IDLE_CHECKS` and `PUSH_SENDER_RESET_HANDSHAKE_CHECKS` so recovery is proven with fresh post-reset pushes, not by popping data that was enqueued before the reset phase.
 - For `cdc_fifo_flops_push_credit`, if the bench waits for an item to become visible on the pop side before attempting the pop, remove that short pre-visibility deadline. Instead, assert `pop_ready`, wait conservatively for the completed pop handshake, and validate ordering/data on the handshake itself.
 - If variable part-selects are needed, use indexed part-select syntax such as `[base +: WIDTH]` or `[base -: WIDTH]`

@@ -49,217 +49,217 @@
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 5 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_1",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: pop_data did not match expected FIFO order at time 344000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 344000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=1337000\nFAIL: FIFO pop data/order mismatch @ t=2415000\nFAIL: FIFO pop data/order mismatch @ t=3255000\nFAIL: FIFO pop data/order mismatch @ t=3689000\nFAIL: FIFO pop data/order mismatch @ t=3759000\nFAIL: FIFO pop data/order mismatch @ t=4837000\nFAIL: FIFO pop data/order mismatch @ t=4893000\nFAIL: FIFO pop data/order mismatch @ t=4907000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL: FIFO pop data/order mismatch @ t=6097000\nFAIL: FIFO pop data/order mismatch @ t=8309000\nFAIL with 15 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_2",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: missing expected pop handshakes @ t=9947000\nFAIL: missing expected pop handshakes @ t=14791000\nFAIL: FIFO pop data/order mismatch @ t=14847000\nFAIL: missing expected pop handshakes @ t=21525000\nFAIL: missing expected pop handshakes @ t=39375000\nFAIL:  pulsed before any pop completed @ t=40165000\nFAIL:  pulsed before any pop completed @ t=40175000\nFAIL:  pulsed before any pop completed @ t=40185000\nFAIL:  pulsed before any pop completed @ t=40195000\nFAIL:  pulsed before any pop completed @ t=40205000\nFAIL:  pulsed before any pop completed @ t=40215000\nFAIL: missing expected pop handshakes @ t=47075000\nFAIL: after an unstalled completed pop @ t=48675000\nFAIL with 13 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 48951000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_3",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: missing expected pop handshakes @ t=9947000\nFAIL: missing expected pop handshakes @ t=14791000\nFAIL: FIFO pop data/order mismatch @ t=14847000\nFAIL: missing expected pop handshakes @ t=21525000\nFAIL: missing expected pop handshakes @ t=39375000\nFAIL:  pulsed before any pop completed @ t=40165000\nFAIL:  pulsed before any pop completed @ t=40175000\nFAIL:  pulsed before any pop completed @ t=40185000\nFAIL:  pulsed before any pop completed @ t=40195000\nFAIL:  pulsed before any pop completed @ t=40205000\nFAIL:  pulsed before any pop completed @ t=40215000\nFAIL: missing expected pop handshakes @ t=47075000\nFAIL: after an unstalled completed pop @ t=48675000\nFAIL with 13 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 48951000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_4",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 5 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_5",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: pop_data did not match expected FIFO order at time 344000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 344000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=539000\nFAIL: FIFO pop data/order mismatch @ t=1337000\nFAIL: FIFO pop data/order mismatch @ t=2023000\nFAIL: FIFO pop data/order mismatch @ t=2415000\nFAIL: FIFO pop data/order mismatch @ t=3241000\nFAIL: FIFO pop data/order mismatch @ t=3675000\nFAIL: FIFO pop data/order mismatch @ t=3745000\nFAIL: FIFO pop data/order mismatch @ t=4837000\nFAIL: FIFO pop data/order mismatch @ t=4893000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL: FIFO pop data/order mismatch @ t=6097000\nFAIL with 15 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_6",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  asserted in stable filled state @ t=4823000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_7",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: pop_data did not match expected FIFO order at time 330000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 330000 (1ps)\n"
+      "sim_output": "FAIL: rted in long-settled empty state @ t=847000\nFAIL: rted in long-settled empty state @ t=861000\nFAIL: rted in long-settled empty state @ t=875000\nFAIL: rted in long-settled empty state @ t=889000\nFAIL: rted in long-settled empty state @ t=903000\nFAIL: rted in long-settled empty state @ t=917000\nFAIL: r pop during empty-side activity @ t=945000\nFAIL:  pulsed before any pop completed @ t=5645000\nFAIL:  pulsed before any pop completed @ t=5655000\nFAIL:  pulsed before any pop completed @ t=5665000\nFAIL:  pulsed before any pop completed @ t=5675000\nFAIL:  pulsed before any pop completed @ t=5685000\nFAIL with 12 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 9933000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_8",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  asserted in stable filled state @ t=4823000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_9",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=4991000\nFAIL: FIFO pop data/order mismatch @ t=5047000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 7 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_10",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  asserted in stable filled state @ t=4823000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_11",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: missing expected pop handshakes @ t=9947000\nFAIL: missing expected pop handshakes @ t=14791000\nFAIL: FIFO pop data/order mismatch @ t=14847000\nFAIL: missing expected pop handshakes @ t=21525000\nFAIL: missing expected pop handshakes @ t=39375000\nFAIL:  pulsed before any pop completed @ t=40165000\nFAIL:  pulsed before any pop completed @ t=40175000\nFAIL:  pulsed before any pop completed @ t=40185000\nFAIL:  pulsed before any pop completed @ t=40195000\nFAIL:  pulsed before any pop completed @ t=40205000\nFAIL:  pulsed before any pop completed @ t=40215000\nFAIL: missing expected pop handshakes @ t=47075000\nFAIL: after an unstalled completed pop @ t=48675000\nFAIL with 13 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 48951000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_12",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=5005000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_13",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  asserted in stable filled state @ t=4823000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_14",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=3269000\nFAIL: FIFO pop data/order mismatch @ t=3717000\nFAIL: FIFO pop data/order mismatch @ t=4921000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 8 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_15",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: missing expected pop handshakes @ t=9947000\nFAIL: missing expected pop handshakes @ t=14791000\nFAIL: FIFO pop data/order mismatch @ t=14847000\nFAIL: missing expected pop handshakes @ t=21525000\nFAIL: missing expected pop handshakes @ t=39375000\nFAIL:  pulsed before any pop completed @ t=40165000\nFAIL:  pulsed before any pop completed @ t=40175000\nFAIL:  pulsed before any pop completed @ t=40185000\nFAIL:  pulsed before any pop completed @ t=40195000\nFAIL:  pulsed before any pop completed @ t=40205000\nFAIL:  pulsed before any pop completed @ t=40215000\nFAIL: missing expected pop handshakes @ t=47075000\nFAIL: after an unstalled completed pop @ t=48675000\nFAIL with 13 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 48951000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_16",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  asserted in stable filled state @ t=4823000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_17",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  asserted in stable filled state @ t=4823000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_18",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=3283000\nFAIL: FIFO pop data/order mismatch @ t=3731000\nFAIL: FIFO pop data/order mismatch @ t=4865000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 8 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_19",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 5 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_20",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  asserted in stable filled state @ t=4823000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_21",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: missing expected pop handshakes @ t=9947000\nFAIL: missing expected pop handshakes @ t=14791000\nFAIL: FIFO pop data/order mismatch @ t=14847000\nFAIL: missing expected pop handshakes @ t=21525000\nFAIL: missing expected pop handshakes @ t=39375000\nFAIL:  pulsed before any pop completed @ t=40165000\nFAIL:  pulsed before any pop completed @ t=40175000\nFAIL:  pulsed before any pop completed @ t=40185000\nFAIL:  pulsed before any pop completed @ t=40195000\nFAIL:  pulsed before any pop completed @ t=40205000\nFAIL:  pulsed before any pop completed @ t=40215000\nFAIL: missing expected pop handshakes @ t=47075000\nFAIL: after an unstalled completed pop @ t=48675000\nFAIL with 13 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 48951000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_22",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: pop_data did not match expected FIFO order at time 344000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 344000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=539000\nFAIL: FIFO pop data/order mismatch @ t=1337000\nFAIL: FIFO pop data/order mismatch @ t=2023000\nFAIL: FIFO pop data/order mismatch @ t=2415000\nFAIL:  changed while pop_ready was low @ t=3087000\nFAIL:  changed while pop_ready was low @ t=3101000\nFAIL:  changed while pop_ready was low @ t=3115000\nFAIL:  changed while pop_ready was low @ t=3129000\nFAIL:  changed while pop_ready was low @ t=3143000\nFAIL:  changed while pop_ready was low @ t=3157000\nFAIL:  changed while pop_ready was low @ t=3171000\nFAIL:  changed while pop_ready was low @ t=3185000\nFAIL:  changed while pop_ready was low @ t=3199000\nFAIL:  changed while pop_ready was low @ t=3213000\nFAIL:  changed while pop_ready was low @ t=3227000\nFAIL: FIFO pop data/order mismatch @ t=3241000\nFAIL: FIFO pop data/order mismatch @ t=3675000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL: FIFO pop data/order mismatch @ t=6097000\nFAIL with 23 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_23",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=3255000\nFAIL: FIFO pop data/order mismatch @ t=3689000\nFAIL: FIFO pop data/order mismatch @ t=4851000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL: FIFO pop data/order mismatch @ t=8309000\nFAIL with 9 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_24",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=4991000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_25",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: missing expected pop handshakes @ t=9947000\nFAIL: missing expected pop handshakes @ t=14791000\nFAIL: FIFO pop data/order mismatch @ t=14847000\nFAIL: missing expected pop handshakes @ t=21525000\nFAIL: missing expected pop handshakes @ t=39375000\nFAIL:  pulsed before any pop completed @ t=40165000\nFAIL:  pulsed before any pop completed @ t=40175000\nFAIL:  pulsed before any pop completed @ t=40185000\nFAIL:  pulsed before any pop completed @ t=40195000\nFAIL:  pulsed before any pop completed @ t=40205000\nFAIL:  pulsed before any pop completed @ t=40215000\nFAIL: missing expected pop handshakes @ t=47075000\nFAIL: after an unstalled completed pop @ t=48675000\nFAIL with 13 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 48951000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_26",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=3283000\nFAIL: FIFO pop data/order mismatch @ t=3731000\nFAIL: FIFO pop data/order mismatch @ t=4879000\nFAIL: FIFO pop data/order mismatch @ t=4977000\nFAIL: FIFO pop data/order mismatch @ t=5047000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 10 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_27",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  asserted in stable filled state @ t=4823000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_28",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=4963000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_29",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 5 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     },
     {
       "mutant_name": "mutant_30",
       "compiled": true,
       "passed": false,
       "compile_error": "",
-      "sim_output": "FAIL: simulation timeout at time 200000000\ntb/cdc_fifo_flops_push_credit_tb.v:109: $finish called at 200000000 (1ps)\n"
+      "sim_output": "FAIL: FIFO pop data/order mismatch @ t=4921000\nFAIL:  pulsed before any pop completed @ t=5855000\nFAIL:  pulsed before any pop completed @ t=5865000\nFAIL:  pulsed before any pop completed @ t=5875000\nFAIL:  pulsed before any pop completed @ t=5885000\nFAIL:  pulsed before any pop completed @ t=5895000\nFAIL with 6 errors\ntb/cdc_fifo_flops_push_credit_tb.v:395: $finish called at 10185000 (1ps)\n"
     }
   ]
 }
