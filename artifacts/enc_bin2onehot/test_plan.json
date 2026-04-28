@@ -1,113 +1,352 @@
 {
   "module_type": "combinational",
   "exhaustive_possible": true,
-  "total_input_bits": 7,
+  "total_input_bits": 5,
   "reset_tests": [
     {
-      "description": "Drive rst=1 while sweeping clk and inputs; verify out stays combinational (15'b0 when in_valid=0, correct one-hot when in_valid=1) despite reset assertion",
+      "description": "Assert and deassert rst while holding in_valid=0 and sweep representative in values including 0, 7, 14, and 15; verify out remains 15'b000000000000000 at all times. This checks that reset does not create unintended functional behavior when output should already be forced low by in_valid.",
       "cycles": 2
     },
     {
-      "description": "Deassert rst then reassert without changing in_valid/in; confirm no glitches or latching and clk phase is irrelevant",
+      "description": "Assert rst while in_valid=1 with valid decode inputs in=0, 1, 7, and 14; verify out still equals 15'b1<<in after a delta cycle/small delay, demonstrating rst is functionally ignored.",
       "cycles": 2
+    },
+    {
+      "description": "Toggle rst 0->1->0 while holding in_valid=1 and a constant valid input such as in=4, then repeat with in=10; verify out is stable and unchanged across rst transitions. This separates correct combinational logic from mutants that incorrectly clear or register output on reset.",
+      "cycles": 3
+    },
+    {
+      "description": "Toggle clk and rst together under constant valid and invalid inputs; verify out depends only on in_valid and in, not on either auxiliary port.",
+      "cycles": 3
     }
   ],
   "normal_tests": [
     {
-      "description": "Exhaustive valid encodings with enable asserted: iterate in_valid=1 and in=0..14, expect a single out bit at position in",
+      "description": "Exhaustive qualified decode for all defined inputs: for every in in 0..14 with in_valid=1, expect exactly one high bit and specifically out = 15'b1 << in. This is the primary oracle and directly exposes off-by-one, reversed bit order, wrong width, and stuck-bit mutants.",
       "vectors": [
         {
-          "clk": "toggle",
-          "rst": 0,
           "in_valid": 1,
           "in": 0,
-          "expected_out": "15'b000000000000001"
+          "expected_out": "000000000000001"
         },
         {
-          "clk": "toggle",
-          "rst": 0,
+          "in_valid": 1,
+          "in": 1,
+          "expected_out": "000000000000010"
+        },
+        {
+          "in_valid": 1,
+          "in": 2,
+          "expected_out": "000000000000100"
+        },
+        {
+          "in_valid": 1,
+          "in": 3,
+          "expected_out": "000000000001000"
+        },
+        {
+          "in_valid": 1,
+          "in": 4,
+          "expected_out": "000000000010000"
+        },
+        {
+          "in_valid": 1,
+          "in": 5,
+          "expected_out": "000000000100000"
+        },
+        {
+          "in_valid": 1,
+          "in": 6,
+          "expected_out": "000000001000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 7,
+          "expected_out": "000000010000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 8,
+          "expected_out": "000000100000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 9,
+          "expected_out": "000001000000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 10,
+          "expected_out": "000010000000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 11,
+          "expected_out": "000100000000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 12,
+          "expected_out": "001000000000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 13,
+          "expected_out": "010000000000000"
+        },
+        {
           "in_valid": 1,
           "in": 14,
-          "expected_out": "15'b100000000000000"
+          "expected_out": "100000000000000"
         }
       ]
     },
     {
-      "description": "Enable gating check: for each in=0..14 hold in_valid=0 and confirm out remains all zeroes even when inputs change",
+      "description": "Exhaustive gating check for all input values: for every in in 0..15 with in_valid=0, expect out = 15'b000000000000000. This directly targets forgotten-valid-gate and stale-output bugs.",
       "vectors": [
         {
-          "clk": "toggle",
-          "rst": 0,
           "in_valid": 0,
-          "in": "any",
-          "expected_out": "15'b0"
+          "in": 0,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 1,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 2,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 3,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 4,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 5,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 6,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 7,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 8,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 9,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 10,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 11,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 12,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 13,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 14,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 15,
+          "expected_out": "000000000000000"
+        }
+      ]
+    },
+    {
+      "description": "Combinational response check: change in while in_valid=1 across several representative values such as 2->3->7->14 and separately toggle in_valid 1->0->1 for fixed in; after each delta cycle/small delay, out must immediately reflect the current formula with no clock edge required.",
+      "vectors": [
+        {
+          "in_valid": 1,
+          "in": 2,
+          "expected_out": "000000000000100"
+        },
+        {
+          "in_valid": 1,
+          "in": 3,
+          "expected_out": "000000000001000"
+        },
+        {
+          "in_valid": 1,
+          "in": 7,
+          "expected_out": "000000010000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 14,
+          "expected_out": "100000000000000"
+        },
+        {
+          "in_valid": 0,
+          "in": 14,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 14,
+          "expected_out": "100000000000000"
         }
       ]
     }
   ],
   "corner_case_tests": [
     {
-      "description": "Undefined in=15 handling: apply in_valid=1, in=15 and ensure design does not drive more than one bit or retain stale output (expect X/ignored but monitor for discrimination)",
+      "description": "Boundary decode values: test lowest valid code in=0 and highest valid code in=14 with in_valid=1. These vectors distinguish correct indexing from reversed-bit-order, off-by-one, and width-extension bugs.",
       "vectors": [
         {
-          "clk": "toggle",
-          "rst": 0,
-          "in_valid": 1,
-          "in": 15,
-          "expected_out": "don't-care (flag mismatches)"
-        }
-      ]
-    },
-    {
-      "description": "Simultaneous control extremes: in_valid toggles same cycle as rst; verify reset has no priority and output still purely combinational with in_valid gating",
-      "vectors": [
-        {
-          "clk": "toggle",
-          "rst": 1,
-          "in_valid": 1,
-          "in": 5,
-          "expected_out": "15'b00000100000?? (should remain zero if rst thinks it matters)"
-        }
-      ]
-    },
-    {
-      "description": "Boundary data patterns: alternate 0x0, 0xF, 0x5, 0xA to catch bit-order swaps or off-by-one indexing",
-      "vectors": [
-        {
-          "clk": "toggle",
-          "rst": 0,
           "in_valid": 1,
           "in": 0,
-          "expected_out": "bit0=1"
+          "expected_out": "000000000000001"
         },
         {
-          "clk": "toggle",
-          "rst": 0,
+          "in_valid": 1,
+          "in": 14,
+          "expected_out": "100000000000000"
+        }
+      ]
+    },
+    {
+      "description": "Undefined input isolation: drive in_valid=1 and in=15, but do not assert exact out value. Only use this case in paired scenarios to verify that behavior for defined cases is not contaminated before or after the undefined input, and that when in_valid later goes to 0 the output is forced to zero.",
+      "vectors": [
+        {
+          "in_valid": 1,
+          "in": 14,
+          "expected_out": "100000000000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 15,
+          "expected_out": "undefined_do_not_check_strictly"
+        },
+        {
+          "in_valid": 0,
+          "in": 15,
+          "expected_out": "000000000000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 0,
+          "expected_out": "000000000000001"
+        }
+      ]
+    },
+    {
+      "description": "Alternating and high-transition input patterns: apply valid inputs whose binary encodings differ in multiple bits, such as 5 (0101), 10 (1010), 6 (0110), and 9 (1001). This targets partial decode logic errors and wrong bit-slice usage.",
+      "vectors": [
+        {
+          "in_valid": 1,
+          "in": 5,
+          "expected_out": "000000000100000"
+        },
+        {
           "in_valid": 1,
           "in": 10,
-          "expected_out": "bit10=1"
+          "expected_out": "000010000000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 6,
+          "expected_out": "000000001000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 9,
+          "expected_out": "000001000000000"
+        }
+      ]
+    },
+    {
+      "description": "Single-hot invariant check over all defined valid inputs: whenever in_valid=1 and in is 0..14, verify population count of out is exactly 1 and the asserted bit index equals unsigned(in). This catches multi-bit-high, all-zero, and misindexed decode mutants even when a literal expected vector table is not used.",
+      "vectors": [
+        {
+          "in_valid": 1,
+          "in_range": "0..14",
+          "expected_property": "popcount(out)==1 and out[in]==1"
+        }
+      ]
+    },
+    {
+      "description": "Auxiliary-signal independence under active decode: while holding in_valid=1 and valid in values such as 1, 8, and 13, toggle clk repeatedly and vary rst; verify no output change except when in itself changes. This separates true combinational decode from accidental registered or reset-sensitive implementations.",
+      "vectors": [
+        {
+          "in_valid": 1,
+          "in": 1,
+          "expected_out": "000000000000010"
+        },
+        {
+          "in_valid": 1,
+          "in": 8,
+          "expected_out": "000000100000000"
+        },
+        {
+          "in_valid": 1,
+          "in": 13,
+          "expected_out": "010000000000000"
         }
       ]
     }
   ],
   "sequence_tests": [
     {
-      "description": "Glitch immunity over time: run multi-cycle pattern where in toggles every cycle, in_valid alternates 1/0, clk continues; confirm out instantly tracks current inputs with no state retention",
-      "num_cycles": 16
+      "description": "No internal state exists, but use a directed temporal sequence to expose stale-output and accidental edge-triggered behavior: apply (in_valid,in) = (1,3) -> (1,12) -> (0,12) -> (1,4) -> (1,14), sampling after each input change without any required clock edge. Expected outputs are 1<<3, 1<<12, 0, 1<<4, 1<<14 respectively.",
+      "num_cycles": 5
     },
     {
-      "description": "Hold/setup edge case: change in immediately before clk edges with in_valid=1 to prove clk is irrelevant and outputs settle without registering",
-      "num_cycles": 8
+      "description": "Hold inputs constant across multiple clk posedges and negedges for representative cases (1,2), (0,2), and (1,11); verify out remains constant over time and does not update only on an edge. This discriminates combinational-output bugs from registered-output bugs.",
+      "num_cycles": 6
+    },
+    {
+      "description": "Apply back-to-back input changes where multiple input bits toggle simultaneously, for example 1->14->2->13 with in_valid held high, then drop in_valid low and high again. Expected trace follows the current input immediately after each change with no one-cycle-late or one-cycle-early behavior.",
+      "num_cycles": 6
     }
   ],
   "random_tests": {
-    "num_vectors": 200,
-    "description": "Randomize in_valid (biased 60% high) and in (0-14 plus occasional 15) per cycle; check that out equals one-hot when valid and zero otherwise, flag any persistence across cycles"
+    "num_vectors": 100,
+    "description": "Generate 100 random stimulus steps over in_valid in {0,1} and in in 0..15. For each step, sample after a delta cycle/small delay. If in_valid=0, require out=0 for any in including 15. If in_valid=1 and in is 0..14, require out=(15'b1<<in). If in_valid=1 and in=15, treat as undefined and skip strict checking for that step. Randomly toggle clk and rst independently during the run and require identical functional checking, since they must not affect out."
   },
   "key_discriminators": [
-    "in_valid=0 must force out=0 even if previous cycle had valid data\u2014detects missing gating",
-    "clk/rst must have no effect on combinational encoder; any registered behavior exposes incorrect mutants",
-    "Exactly one out bit may be high for in_valid=1, in=0..14; multiple or shifted bits indicate decoding bugs",
-    "Undefined in=15 should not corrupt later outputs; lingering ones reveal stateful errors"
+    "Exhaustive enumeration is feasible because the functional input space is only 5 bits wide (in_valid plus 4-bit in); this should be the core strategy.",
+    "When in_valid=0, out must be all zeros for every in value including 15; any decode activity here is a bug.",
+    "For every defined valid input 0..14, out must equal exactly one-hot bit index in, not in+1, not in-1, and not reversed toward MSB.",
+    "Input 0 must map to out[0] and input 14 must map to out[14]; these two vectors strongly separate correct ordering from reversed or mis-sized decoders.",
+    "Input 15 with in_valid=1 is explicitly undefined and should not be checked strictly; mutants must not be rewarded or penalized solely on that case.",
+    "clk and rst are auxiliary only; toggling either must never change out for a fixed (in_valid,in). This exposes accidental sequential logic or reset-sensitive logic.",
+    "Sampling should occur after a delta cycle or small delay following input changes, not on a clock edge, to enforce combinational behavior without assuming zero-delay propagation.",
+    "For all defined valid cases, popcount(out) must be exactly 1; this catches multi-hot, stuck-at, and partial-decode faults.",
+    "Back-to-back changes without clock edges should immediately update out to the newest input-qualified value, exposing stale outputs and registered-output mutants.",
+    "Representative high-transition patterns such as 5, 10, 6, and 9 are useful for catching wrong bit slicing and partial decode mistakes that may not appear in only monotonic input sweeps."
   ]
 }

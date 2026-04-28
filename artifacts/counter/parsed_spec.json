@@ -1,0 +1,157 @@
+{
+  "module_name": "counter",
+  "ports": [
+    {
+      "name": "clk",
+      "direction": "input",
+      "width": 1,
+      "type": "clock"
+    },
+    {
+      "name": "rst",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "reinit",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "incr_valid",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "decr_valid",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "initial_value",
+      "direction": "input",
+      "width": 4,
+      "type": "data"
+    },
+    {
+      "name": "incr",
+      "direction": "input",
+      "width": 2,
+      "type": "data"
+    },
+    {
+      "name": "decr",
+      "direction": "input",
+      "width": 2,
+      "type": "data"
+    },
+    {
+      "name": "value",
+      "direction": "output",
+      "width": 4,
+      "type": "data"
+    },
+    {
+      "name": "value_next",
+      "direction": "output",
+      "width": 4,
+      "type": "data"
+    }
+  ],
+  "has_clock": true,
+  "clock_name": "clk",
+  "has_reset": true,
+  "reset_name": "rst",
+  "reset_type": "sync_active_high",
+  "is_sequential": true,
+  "behavior_summary": "The module is a rising-edge-triggered up/down counter with registered state `value` and combinational next-state output `value_next`. On each cycle, synchronous active-high `rst` loads `value` with `initial_value`. Active-high `reinit` also synchronously loads `initial_value` and overrides any increment/decrement request in that cycle. Otherwise, the next state is computed from the current `value`: add `incr` if `incr_valid` is asserted, subtract `decr` if `decr_valid` is asserted, apply both as a net signed change `(incr - decr)` if both valids are high, and hold if neither is high. The counter state is defined over the inclusive range 0..10 and wraps modulo 11 on overflow or underflow. `value` is the registered current state after the last rising edge; `value_next` is the combinational prediction of the state that will be loaded on the next rising edge under the present inputs.",
+  "edge_cases": [
+    "If `rst` is high on a rising edge, `value` is synchronously loaded with `initial_value`.",
+    "If `reinit` is high on a rising edge, `value` is synchronously loaded with `initial_value` and any concurrent increment/decrement request is ignored.",
+    "If both `incr_valid` and `decr_valid` are high, the applied arithmetic is the net change `(incr - decr)` in the same cycle.",
+    "If neither `incr_valid` nor `decr_valid` is high, the counter holds its current state.",
+    "Overflow wraps within the 0..10 range modulo 11, e.g. 9 + 3 -> 1.",
+    "Underflow wraps within the 0..10 range modulo 11, e.g. 1 - 3 -> 9.",
+    "Zero net change must leave the state unchanged, including cases where both valids are high and `incr == decr`.",
+    "The spec states `incr` and `decr` have maximum value 3, so values outside 0..3 should not be assumed legal stimulus.",
+    "The spec does not explicitly say whether `value_next` reflects `rst`, but since it represents the next state at the next rising edge, including reset in the next-state calculation is the safest inference."
+  ],
+  "state_transitions": [
+    "ANY_STATE -> `initial_value` when `rst` is asserted at a rising edge.",
+    "ANY_STATE -> `initial_value` when `reinit` is asserted at a rising edge and `rst` is not taking precedence.",
+    "STATE v -> ((v + incr) mod 11) when `incr_valid=1` and `decr_valid=0`.",
+    "STATE v -> ((v - decr) mod 11) when `incr_valid=0` and `decr_valid=1`.",
+    "STATE v -> ((v + incr - decr) mod 11) when `incr_valid=1` and `decr_valid=1`.",
+    "STATE v -> v when `incr_valid=0` and `decr_valid=0`."
+  ],
+  "priorities": [
+    "rst > reinit > arithmetic update > hold",
+    "Within arithmetic update, increment and decrement are combined as one net operation; neither has priority over the other when both valids are high."
+  ],
+  "mutation_risks": [
+    "Implementing saturation instead of wrap-around modulo 11.",
+    "Using modulo 16 or raw 4-bit wrap instead of modulo 11 over the legal state range 0..10.",
+    "Giving increment or decrement priority when both valids are high instead of applying the net change.",
+    "Ignoring `reinit` priority and still applying incr/decr in the same cycle.",
+    "Treating `rst` as asynchronous instead of synchronous.",
+    "Loading zero on reset/reinit instead of loading `initial_value`.",
+    "Computing underflow incorrectly for negative results.",
+    "Off-by-one errors at boundaries 0 and 10.",
+    "Driving `value_next` from stale state or making it registered instead of combinational.",
+    "Making `value` update with wrong latency relative to `value_next`.",
+    "Mishandling zero-change cases such as `incr_valid=decr_valid=1` with equal operands.",
+    "Ignoring one valid signal when both are asserted."
+  ],
+  "oracle_style": "cycle_accurate",
+  "executable_reference": [
+    "Maintain a software model state `model_value` in the range 0..10.",
+    "At all times, compute `expected_value_next` from current `model_value` and current inputs.",
+    "If `rst` is 1, set `expected_value_next = initial_value`.",
+    "Else if `reinit` is 1, set `expected_value_next = initial_value`.",
+    "Else compute `delta = (incr_valid ? incr : 0) - (decr_valid ? decr : 0)` and set `expected_value_next = ((model_value + delta) % 11 + 11) % 11`.",
+    "Check combinationally that `value_next == expected_value_next` after inputs settle.",
+    "On each rising edge of `clk`, update `model_value = expected_value_next` and then check that registered output `value` matches `model_value` after the edge.",
+    "Restrict strict checking to legal operand values `incr, decr` in 0..3 unless the spec is extended."
+  ],
+  "guaranteed_properties": [
+    "`value` changes only on the rising edge of `clk`.",
+    "`rst` is synchronous, active high, and loads `initial_value` into `value`.",
+    "`reinit` is synchronous, active high, and loads `initial_value` into `value`.",
+    "When `reinit` is asserted, concurrent increment/decrement requests are ignored.",
+    "When both `incr_valid` and `decr_valid` are asserted, the net change `(incr - decr)` is applied.",
+    "When neither valid is asserted, the counter holds its current value.",
+    "The externally intended counting range is 0 through 10 inclusive.",
+    "Overflow and underflow wrap around within that range.",
+    "`value` is the registered current state.",
+    "`value_next` is a combinational indication of the next state for the next rising edge."
+  ],
+  "ambiguous_properties": [
+    "Whether `value_next` must explicitly reflect `rst` in addition to `reinit` is not stated in the Outputs section, though it is a strong next-state inference.",
+    "The behavior if `initial_value` is outside the legal 0..10 range is unspecified.",
+    "The exact timing tolerance for observing combinational `value_next` after input changes is unspecified beyond being combinational.",
+    "The exact power-up state before any clock edge or reset is unspecified.",
+    "The spec does not define behavior for illegal `incr`/`decr` values above 3 even if the bus width allows them."
+  ],
+  "forbidden_assumptions": [
+    "Do not assume any asynchronous reset behavior.",
+    "Do not assume `value` changes in the same cycle without a rising clock edge.",
+    "Do not assume saturation at 0 or 10; the spec requires wrap-around.",
+    "Do not assume 4-bit modulo-16 behavior; the required wrap domain is modulo 11 over 0..10.",
+    "Do not assume a specific behavior for out-of-range `initial_value` unless the spec or reference RTL guarantees it.",
+    "Do not assume illegal `incr`/`decr` encodings above 3 must be handled in any particular way.",
+    "Do not assume internal implementation details such as add-first or subtract-first matter when both valids are asserted; only the final net result is guaranteed.",
+    "Do not assert exact delta-cycle ordering between `value` and `value_next` beyond `value_next` being combinational and `value` being registered."
+  ],
+  "output_behavior": {
+    "combinational_outputs": [
+      "value_next"
+    ],
+    "registered_outputs": [
+      "value"
+    ]
+  }
+}

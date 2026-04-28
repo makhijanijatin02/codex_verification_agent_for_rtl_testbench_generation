@@ -1,0 +1,478 @@
+{
+  "module_type": "combinational",
+  "exhaustive_possible": false,
+  "total_input_bits": 111,
+  "reset_tests": [
+    {
+      "description": "No reset port exists. Confirm purely combinational behavior by applying stable legal inputs at time 0 and after arbitrary input changes; outputs must depend only on current inputs with no initialization requirement. Do not expect any reset-specific state.",
+      "cycles": 0
+    }
+  ],
+  "normal_tests": [
+    {
+      "description": "Shift 0 passthrough. Use distinct 12-bit symbols in all 8 lanes so symbol order errors are obvious. Expect out_valid=1 and out exactly equal to packed in.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x001",
+            "0x123",
+            "0x456",
+            "0x789",
+            "0xABC",
+            "0xDEF",
+            "0x135",
+            "0x246"
+          ],
+          "shift": 0,
+          "fill": "0xAAA",
+          "expect_out_symbols": [
+            "0x001",
+            "0x123",
+            "0x456",
+            "0x789",
+            "0xABC",
+            "0xDEF",
+            "0x135",
+            "0x246"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Shift 1 basic left-by-symbol operation. Lowest output symbol must become fill; all higher symbols must copy from the next lower input index. This separates symbol shift from bit shift and wrong-direction bugs.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x001",
+            "0x123",
+            "0x456",
+            "0x789",
+            "0xABC",
+            "0xDEF",
+            "0x135",
+            "0x246"
+          ],
+          "shift": 1,
+          "fill": "0x55A",
+          "expect_out_symbols": [
+            "0x55A",
+            "0x001",
+            "0x123",
+            "0x456",
+            "0x789",
+            "0xABC",
+            "0xDEF",
+            "0x135"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Shift 2 with nontrivial fill replication. Verify two copies of fill appear in output symbol slots 0 and 1 and remaining symbols shift by exactly two positions.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x010",
+            "0x111",
+            "0x222",
+            "0x333",
+            "0x444",
+            "0x555",
+            "0x666",
+            "0x777"
+          ],
+          "shift": 2,
+          "fill": "0xE3C",
+          "expect_out_symbols": [
+            "0xE3C",
+            "0xE3C",
+            "0x010",
+            "0x111",
+            "0x222",
+            "0x333",
+            "0x444",
+            "0x555"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Shift 3 mid-range operation using all distinct symbols. This catches indexing reversal and packed concatenation mistakes.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x00A",
+            "0x11B",
+            "0x22C",
+            "0x33D",
+            "0x44E",
+            "0x55F",
+            "0x660",
+            "0x771"
+          ],
+          "shift": 3,
+          "fill": "0x80F",
+          "expect_out_symbols": [
+            "0x80F",
+            "0x80F",
+            "0x80F",
+            "0x00A",
+            "0x11B",
+            "0x22C",
+            "0x33D",
+            "0x44E"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Shift 4 and shift 5 near the legal boundary. These are high-value cases for off-by-one and boundary truncation bugs.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x012",
+            "0x124",
+            "0x236",
+            "0x348",
+            "0x45A",
+            "0x56C",
+            "0x67E",
+            "0x780"
+          ],
+          "shift": 4,
+          "fill": "0xF00",
+          "expect_out_symbols": [
+            "0xF00",
+            "0xF00",
+            "0xF00",
+            "0xF00",
+            "0x012",
+            "0x124",
+            "0x236",
+            "0x348"
+          ],
+          "expect_out_valid": 1
+        },
+        {
+          "in_symbols": [
+            "0x012",
+            "0x124",
+            "0x236",
+            "0x348",
+            "0x45A",
+            "0x56C",
+            "0x67E",
+            "0x780"
+          ],
+          "shift": 5,
+          "fill": "0x00F",
+          "expect_out_symbols": [
+            "0x00F",
+            "0x00F",
+            "0x00F",
+            "0x00F",
+            "0x00F",
+            "0x012",
+            "0x124",
+            "0x236"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    }
+  ],
+  "corner_case_tests": [
+    {
+      "description": "Illegal shifts 6 and 7. Only out_valid is checked; out must be treated as don't-care because spec does not guarantee its value when shift>5.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x001",
+            "0x123",
+            "0x456",
+            "0x789",
+            "0xABC",
+            "0xDEF",
+            "0x135",
+            "0x246"
+          ],
+          "shift": 6,
+          "fill": "0xAAA",
+          "expect_out_valid": 0,
+          "check_out": false
+        },
+        {
+          "in_symbols": [
+            "0x001",
+            "0x123",
+            "0x456",
+            "0x789",
+            "0xABC",
+            "0xDEF",
+            "0x135",
+            "0x246"
+          ],
+          "shift": 7,
+          "fill": "0x555",
+          "expect_out_valid": 0,
+          "check_out": false
+        }
+      ]
+    },
+    {
+      "description": "All-zero boundary. Confirms no unintended set bits and correct fill replication when fill is also zero.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000"
+          ],
+          "shift": 5,
+          "fill": "0x000",
+          "expect_out_symbols": [
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000",
+            "0x000"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "All-ones boundary. Distinguishes bit slicing corruption from valid whole-symbol movement.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF"
+          ],
+          "shift": 1,
+          "fill": "0xFFF",
+          "expect_out_symbols": [
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF",
+            "0xFFF"
+          ],
+          "expect_out_valid": 1
+        },
+        {
+          "in_symbols": [
+            "0xFFF",
+            "0x000",
+            "0xFFF",
+            "0x000",
+            "0xFFF",
+            "0x000",
+            "0xFFF",
+            "0x000"
+          ],
+          "shift": 1,
+          "fill": "0x000",
+          "expect_out_symbols": [
+            "0x000",
+            "0xFFF",
+            "0x000",
+            "0xFFF",
+            "0x000",
+            "0xFFF",
+            "0x000",
+            "0xFFF"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Alternating-bit symbol patterns. Targets accidental 96-bit bitwise shifts, wrong bit slicing, and partial-symbol fill bugs.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0xAAA",
+            "0x555",
+            "0xA5A",
+            "0x5A5",
+            "0xF0F",
+            "0x0F0",
+            "0x99A",
+            "0x660"
+          ],
+          "shift": 2,
+          "fill": "0xC3C",
+          "expect_out_symbols": [
+            "0xC3C",
+            "0xC3C",
+            "0xAAA",
+            "0x555",
+            "0xA5A",
+            "0x5A5",
+            "0xF0F",
+            "0x0F0"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Unique one-hot symbol tags across lanes. This is the strongest discriminator for wrong direction, reversed lane numbering, or wrap-around behavior.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x001",
+            "0x002",
+            "0x004",
+            "0x008",
+            "0x010",
+            "0x020",
+            "0x040",
+            "0x080"
+          ],
+          "shift": 3,
+          "fill": "0x100",
+          "expect_out_symbols": [
+            "0x100",
+            "0x100",
+            "0x100",
+            "0x001",
+            "0x002",
+            "0x004",
+            "0x008",
+            "0x010"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Fill replication must occur per vacated 12-bit symbol, not once or at bit granularity. Use fill unlike any input symbol so every vacated slot is easy to identify.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x101",
+            "0x202",
+            "0x303",
+            "0x404",
+            "0x505",
+            "0x606",
+            "0x707",
+            "0x808"
+          ],
+          "shift": 5,
+          "fill": "0xD2E",
+          "expect_out_symbols": [
+            "0xD2E",
+            "0xD2E",
+            "0xD2E",
+            "0xD2E",
+            "0xD2E",
+            "0x101",
+            "0x202",
+            "0x303"
+          ],
+          "expect_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Boundary legality around shift=5 and shift=6 using same data. Confirms comparison is <=5, not <5 or <=6.",
+      "vectors": [
+        {
+          "in_symbols": [
+            "0x111",
+            "0x222",
+            "0x333",
+            "0x444",
+            "0x555",
+            "0x666",
+            "0x777",
+            "0x888"
+          ],
+          "shift": 5,
+          "fill": "0x999",
+          "expect_out_symbols": [
+            "0x999",
+            "0x999",
+            "0x999",
+            "0x999",
+            "0x999",
+            "0x111",
+            "0x222",
+            "0x333"
+          ],
+          "expect_out_valid": 1
+        },
+        {
+          "in_symbols": [
+            "0x111",
+            "0x222",
+            "0x333",
+            "0x444",
+            "0x555",
+            "0x666",
+            "0x777",
+            "0x888"
+          ],
+          "shift": 6,
+          "fill": "0x999",
+          "expect_out_valid": 0,
+          "check_out": false
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "Combinational sweep over shift with fixed uniquely tagged symbols and fixed fill. Apply shift values 0,1,2,3,4,5,6,7 in sequence without any reset. At each step outputs must reflect the current inputs immediately: legal shifts produce the exact symbol mapping, illegal shifts only force out_valid=0. This sequence exposes stale-output latching and off-by-one validity bugs.",
+      "num_cycles": 8
+    },
+    {
+      "description": "Input-change sensitivity with fixed legal shift. Hold shift=2 while changing in and fill across several back-to-back evaluations. Expected out must always be recomputed from current in/fill only, with no dependence on prior vectors. Use one step where only fill changes and one step where only in changes to separate fill-path bugs from data-path bugs.",
+      "num_cycles": 4
+    },
+    {
+      "description": "Transition between legal and illegal control values. Drive shift sequence 5->6->5->0 with constant data. Check out_valid toggles 1->0->1->1 and that legal outputs after returning from illegal shift are correct for the current shift, not stale from a prior legal case.",
+      "num_cycles": 4
+    }
+  ],
+  "random_tests": {
+    "num_vectors": 100,
+    "description": "Generate 100 random vectors with random 96-bit input packed as 8 independent 12-bit symbols, random 12-bit fill, and random 3-bit shift. For shift<=5, compute oracle per symbol: for each output lane i in 0..7, expect fill if i<shift else input symbol i-shift, and expect out_valid=1. For shift>5, check only out_valid=0 and treat out as don't-care. Bias at least half the random cases toward boundary/control values shift in {0,1,4,5,6,7}. Also inject a few constrained random patterns with repeated symbols, alternating patterns, and fill equal to one existing input symbol to ensure oracle correctness is independent of uniqueness assumptions."
+  },
+  "key_discriminators": [
+    "Shift 0 must be exact passthrough with out_valid=1.",
+    "Legal range is exactly shift<=5; shift=5 is valid and shift=6,7 are invalid.",
+    "Movement is by whole 12-bit symbols, not a 96-bit bitwise shift.",
+    "Vacated low-index output symbol slots are filled; fill must appear on the least-significant-symbol side, not the high side.",
+    "For legal shifts, output symbol i must equal fill when i<shift, else input symbol i-shift.",
+    "No wrap-around is allowed; symbols shifted out of the high end are discarded.",
+    "Fill must be replicated once per vacated 12-bit symbol slot, not inserted once and not replicated at bit granularity.",
+    "Distinct per-lane symbol tags should expose wrong shift direction, reversed symbol indexing, and packed concatenation mistakes.",
+    "For illegal shifts, only out_valid must be checked; tests must not constrain out when out_valid=0.",
+    "Back-to-back input changes should produce immediate output changes, proving no latching or stale combinational behavior."
+  ]
+}

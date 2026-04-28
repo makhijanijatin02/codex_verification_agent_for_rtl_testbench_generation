@@ -1,0 +1,192 @@
+{
+  "module_name": "credit_receiver",
+  "ports": [
+    {
+      "name": "clk",
+      "direction": "input",
+      "width": 1,
+      "type": "clock"
+    },
+    {
+      "name": "rst",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "push_sender_in_reset",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "push_receiver_in_reset",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "push_credit_stall",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "push_credit",
+      "direction": "output",
+      "width": 1,
+      "type": "credit"
+    },
+    {
+      "name": "push_valid",
+      "direction": "input",
+      "width": 1,
+      "type": "valid"
+    },
+    {
+      "name": "pop_credit",
+      "direction": "input",
+      "width": 1,
+      "type": "credit"
+    },
+    {
+      "name": "pop_valid",
+      "direction": "output",
+      "width": 1,
+      "type": "valid"
+    },
+    {
+      "name": "credit_initial",
+      "direction": "input",
+      "width": 1,
+      "type": "data"
+    },
+    {
+      "name": "credit_withhold",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "credit_count",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "credit_available",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "push_data",
+      "direction": "input",
+      "width": 8,
+      "type": "data"
+    },
+    {
+      "name": "pop_data",
+      "direction": "output",
+      "width": 8,
+      "type": "data"
+    }
+  ],
+  "has_clock": true,
+  "clock_name": "clk",
+  "has_reset": true,
+  "reset_name": "rst",
+  "reset_type": "async_active_high",
+  "is_sequential": true,
+  "behavior_summary": "This module is a receiver-side credit-flow-control adapter with an unbuffered 8-bit combinational data path. It forwards push_data directly to pop_data at all times. pop_valid is asserted exactly when push_valid is high and neither rst nor push_sender_in_reset is asserted. The module maintains a 1-bit credit counter representing available downstream space, exposes that state on credit_count, reloads the counter from credit_initial while in reset, increments the counter on a clock edge when pop_credit is asserted, and decrements the counter on a clock edge when a credit was actually returned to the sender in the previous cycle. A combinational credit_available signal represents credit_count minus credit_withhold. A combinational push_credit is asserted only when not in reset, push_credit_stall is low, and credit_available is nonzero. push_receiver_in_reset is a direct combinational reflection of rst.",
+  "edge_cases": [
+    "Reset state is entered when either rst=1 or push_sender_in_reset=1; in that state pop_valid=0 and push_credit=0 regardless of other inputs.",
+    "push_receiver_in_reset depends only on rst, not on push_sender_in_reset.",
+    "Because the counter is 1 bit and the design manages at most one credit, arithmetic naturally wraps modulo 2 if increment/decrement is applied as raw 1-bit arithmetic.",
+    "credit_available is defined combinationally as credit_count - credit_withhold on 1-bit quantities; when credit_count=0 and credit_withhold=1, the arithmetic result is ambiguous at the protocol level unless interpreted as 1-bit wraparound.",
+    "If pop_credit is asserted in a cycle where a credit was also sent in the previous cycle, the next counter value should reflect both events in the specified update rule.",
+    "push_credit is combinational and depends on current-cycle reset/stall/credit_available, but the counter decrement depends on whether push_credit was asserted in the previous cycle.",
+    "The module does not buffer data, so pop_data follows push_data even during reset; only pop_valid is forced low.",
+    "If push_valid=1 during reset, data may still appear on pop_data but must not be considered valid because pop_valid=0."
+  ],
+  "state_transitions": [
+    "RESET condition active when rst=1 or push_sender_in_reset=1; while active, credit_count is initialized from credit_initial, pop_valid=0, push_credit=0.",
+    "From RESET to ACTIVE when rst=0 and push_sender_in_reset=0.",
+    "In ACTIVE operation, on each rising edge: credit_count_next = credit_count + pop_credit - prev_push_credit, with 1-bit arithmetic, unless reset is active.",
+    "No named FSM states are specified beyond RESET versus normal active credit-tracking operation."
+  ],
+  "priorities": [
+    "reset state overrides data-valid propagation and credit return: (rst or push_sender_in_reset) > push_valid for pop_valid, and (rst or push_sender_in_reset) > push_credit_stall/credit_available for push_credit.",
+    "For push_credit generation, reset blocking > push_credit_stall > credit_available nonzero check.",
+    "For counter update, reset reload from credit_initial has priority over increment/decrement behavior."
+  ],
+  "mutation_risks": [
+    "Using only rst and forgetting that push_sender_in_reset must also force reset behavior.",
+    "Incorrectly driving push_receiver_in_reset from (rst | push_sender_in_reset) instead of rst alone.",
+    "Making pop_valid depend on credit availability or stall, even though it should depend only on push_valid and reset state.",
+    "Failing to keep pop_data as an unconditional combinational pass-through from push_data.",
+    "Computing push_credit from credit_count instead of credit_available, thereby ignoring credit_withhold.",
+    "Handling credit_available subtraction incorrectly for 1-bit arithmetic or saturating when wraparound logic was intended.",
+    "Decrementing credit_count based on current push_credit instead of previous-cycle push_credit.",
+    "Updating the credit counter combinationally instead of only on clk.",
+    "Giving pop_credit or previous push_credit the wrong precedence when both affect the same next-state update.",
+    "Allowing push_credit during reset or when push_credit_stall is asserted.",
+    "Loading credit_initial only on rst and not on push_sender_in_reset."
+  ],
+  "oracle_style": "protocol_invariant",
+  "executable_reference": [
+    "At all times, pop_data must equal push_data bit-for-bit.",
+    "At all times, push_receiver_in_reset must equal rst.",
+    "If rst=1 or push_sender_in_reset=1 in a cycle, then pop_valid must be 0 and push_credit must be 0 in that cycle.",
+    "If rst=0 and push_sender_in_reset=0, then pop_valid must equal push_valid.",
+    "If rst=0, push_sender_in_reset=0, push_credit_stall=0, and credit_available is nonzero, then push_credit must be 1; otherwise push_credit must be 0.",
+    "During reset, credit_count must reload from credit_initial.",
+    "Across active clock edges, the credit counter must update according to accepted downstream credit returns (pop_credit) and prior-cycle returned-to-sender credits (prev_push_credit), not current-cycle push_credit.",
+    "credit_count output must always reflect the module's stored 1-bit credit state.",
+    "credit_available must be the combinational 1-bit result of credit_count minus credit_withhold; testbench should treat this as bit-level arithmetic rather than assume saturating subtraction."
+  ],
+  "guaranteed_properties": [
+    "Module name is credit_receiver and the port interface matches the provided header.",
+    "Data width is 8 bits on push_data and pop_data.",
+    "The module has a combinational, zero-cycle data path: pop_data equals push_data.",
+    "pop_valid is asserted if and only if push_valid is high and the module is not in reset state.",
+    "Reset state is defined by (rst || push_sender_in_reset).",
+    "In reset state, pop_valid is deasserted.",
+    "In reset state, push_credit is deasserted.",
+    "push_receiver_in_reset is a direct combinational reflection of rst.",
+    "credit_count is a 1-bit internal credit counter exposed on the credit_count output.",
+    "On reset, the credit counter is initialized from credit_initial.",
+    "pop_credit increments the credit counter on the rising edge of clk.",
+    "A previously asserted push_credit decrements the credit counter on the rising edge of clk.",
+    "credit_available is combinationally defined as credit_count - credit_withhold.",
+    "push_credit is combinational and depends on not being in reset, push_credit_stall being low, and credit_available being nonzero."
+  ],
+  "ambiguous_properties": [
+    "The exact reset timing of credit_count relative to clk is not fully explicit: outputs clearly react combinationally to reset, but the specification does not unambiguously state whether the storage element reset is asynchronous or synchronous at the flop implementation level.",
+    "Because credit_count and credit_withhold are 1-bit and credit_available is defined as a subtraction, the externally intended meaning under underflow is not fully specified beyond the literal arithmetic expression.",
+    "The specification says the system manages a maximum of one credit, but it does not explicitly say whether illegal modulo-2 counter states caused by simultaneous increment/decrement or malformed stimulus should be prevented, tolerated, or wrapped.",
+    "The exact arithmetic ordering or implementation form for simultaneous pop_credit increment and previous-cycle push_credit decrement is not spelled out beyond the textual rules; only the logical effect of both contributions is implied.",
+    "No explicit guarantee is given about behavior under X/Z inputs or metastable/reset-crossing conditions."
+  ],
+  "forbidden_assumptions": [
+    "Do not assume credit_count reset is synchronous to clk unless the RTL or spec states that explicitly; only assert the externally visible reset effects that are explicit.",
+    "Do not assume saturating arithmetic for credit_available; the spec gives a subtraction expression, not a saturation rule.",
+    "Do not assume credit_available is a semantic 'count of usable credits' beyond the literal 1-bit combinational subtraction in all corner cases.",
+    "Do not assume current-cycle push_credit causes same-cycle counter decrement; the spec explicitly says decrement is based on push_credit asserted in the previous cycle.",
+    "Do not assume any buffering, skid storage, or registered latency on pop_data or pop_valid beyond what is explicitly stated.",
+    "Do not assume the environment will avoid asserting pop_credit when the counter is zero; unless constrained by the testbench, the observable rules should still follow the stated arithmetic/update semantics.",
+    "Do not assume push_receiver_in_reset reflects push_sender_in_reset; it is only guaranteed to reflect rst."
+  ],
+  "output_behavior": {
+    "combinational_outputs": [
+      "push_receiver_in_reset",
+      "push_credit",
+      "pop_valid",
+      "credit_available",
+      "pop_data"
+    ],
+    "registered_outputs": [
+      "credit_count"
+    ]
+  }
+}

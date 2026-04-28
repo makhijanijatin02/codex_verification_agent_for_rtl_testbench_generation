@@ -1,0 +1,294 @@
+{
+  "module_type": "sequential",
+  "oracle_style": "protocol_invariant",
+  "exhaustive_possible": false,
+  "total_input_bits": 16,
+  "safe_checks": [
+    "At all times, pop_data must equal push_data bit-for-bit.",
+    "At all times, push_receiver_in_reset must equal rst and must not depend on push_sender_in_reset.",
+    "Whenever rst=1 or push_sender_in_reset=1, pop_valid must be 0 in that same cycle.",
+    "Whenever rst=1 or push_sender_in_reset=1, push_credit must be 0 in that same cycle.",
+    "Whenever rst=0 and push_sender_in_reset=0, pop_valid must equal push_valid and must not depend on credit_available, push_credit_stall, or pop_credit.",
+    "When reset state is active, credit_count must reload from credit_initial.",
+    "On active rising clock edges, credit_count must update from prior stored state using pop_credit increment and previous-cycle push_credit decrement, not current-cycle push_credit.",
+    "credit_count output must always reflect the stored 1-bit credit state.",
+    "credit_available must equal the 1-bit combinational subtraction credit_count - credit_withhold.",
+    "When not in reset state, push_credit must be 1 iff push_credit_stall=0 and credit_available is nonzero."
+  ],
+  "unsafe_checks": [
+    "Do not strictly assert whether credit_count storage updates asynchronously at the instant rst or push_sender_in_reset changes; only assert the explicitly guaranteed externally visible reset effects and that reset reload is observed in reset state.",
+    "Do not replace credit_available subtraction with saturating semantics; avoid checks that interpret it as a numeric usable-credit count beyond literal 1-bit subtraction.",
+    "Do not assume any stronger semantic meaning for illegal or wrapped 1-bit counter states beyond the stated 1-bit arithmetic behavior.",
+    "Do not assert a specific implementation ordering for simultaneous pop_credit and previous-cycle push_credit beyond the logical next-state effect implied by both contributions.",
+    "Do not assert behavior for X/Z inputs, metastability, or reset-crossing analog effects.",
+    "Do not assert that current-cycle push_credit decrements credit_count in the same cycle; only previous-cycle push_credit may affect the next clock update.",
+    "Do not assert push_receiver_in_reset equals (rst || push_sender_in_reset); it is guaranteed to track rst only."
+  ],
+  "minimal_safe_oracle": [
+    "Continuously check pop_data == push_data for every cycle, including reset cycles.",
+    "Continuously check push_receiver_in_reset == rst for every cycle, including cases where push_sender_in_reset toggles independently.",
+    "Continuously check pop_valid == (push_valid && !rst && !push_sender_in_reset).",
+    "Continuously check push_credit == ((!rst && !push_sender_in_reset && !push_credit_stall && ((credit_count - credit_withhold) & 1)) ? 1 : 0) using observed/stored 1-bit credit_count and literal 1-bit subtraction.",
+    "Drive reset-state entry through both rst and push_sender_in_reset and verify pop_valid=0, push_credit=0, and credit_count reloads to credit_initial while reset state is active.",
+    "Across active posedges, update an independent 1-bit model: credit_count_next = credit_count + pop_credit - prev_push_credit modulo 2, with reset reload taking priority."
+  ],
+  "reset_tests": [
+    {
+      "description": "Assert rst=1 with push_sender_in_reset=0, sweep credit_initial over 0 and 1, and verify immediately/same-cycle that push_receiver_in_reset=1, pop_valid=0, push_credit=0, pop_data still equals push_data, and credit_count reload is observed while reset is held.",
+      "cycles": 3
+    },
+    {
+      "description": "Assert push_sender_in_reset=1 with rst=0 and verify reset-state behavior matches for pop_valid/push_credit/credit_count reload, while push_receiver_in_reset remains 0 because it reflects rst only.",
+      "cycles": 3
+    },
+    {
+      "description": "Assert both rst=1 and push_sender_in_reset=1 together, vary push_valid, push_credit_stall, pop_credit, credit_withhold, and push_data, and verify reset state still forces pop_valid=0 and push_credit=0 with pop_data pass-through unchanged.",
+      "cycles": 2
+    },
+    {
+      "description": "Release reset from rst and from push_sender_in_reset on separate trials and verify outputs return to active combinational behavior without requiring an extra data-path latency cycle.",
+      "cycles": 4
+    }
+  ],
+  "normal_tests": [
+    {
+      "description": "Basic active-mode data/valid propagation with no reset asserted: verify pop_data follows push_data and pop_valid follows push_valid for representative data values 0x00, 0x5A, 0xA5, 0xFF.",
+      "vectors": [
+        {
+          "rst": 0,
+          "push_sender_in_reset": 0,
+          "push_valid": 0,
+          "push_data": 0,
+          "expected": {
+            "pop_data": 0,
+            "pop_valid": 0
+          }
+        },
+        {
+          "rst": 0,
+          "push_sender_in_reset": 0,
+          "push_valid": 1,
+          "push_data": 90,
+          "expected": {
+            "pop_data": 90,
+            "pop_valid": 1
+          }
+        },
+        {
+          "rst": 0,
+          "push_sender_in_reset": 0,
+          "push_valid": 1,
+          "push_data": 165,
+          "expected": {
+            "pop_data": 165,
+            "pop_valid": 1
+          }
+        },
+        {
+          "rst": 0,
+          "push_sender_in_reset": 0,
+          "push_valid": 1,
+          "push_data": 255,
+          "expected": {
+            "pop_data": 255,
+            "pop_valid": 1
+          }
+        }
+      ]
+    },
+    {
+      "description": "Basic push_credit generation in active mode: preload credit_count through reset, then verify push_credit responds combinationally to push_credit_stall and credit_withhold via literal 1-bit credit_available = credit_count - credit_withhold.",
+      "vectors": [
+        {
+          "precondition": "Hold reset state with credit_initial=1, then enter active mode so modeled credit_count=1",
+          "rst": 0,
+          "push_sender_in_reset": 0,
+          "push_credit_stall": 0,
+          "credit_withhold": 0,
+          "expected": {
+            "credit_available": 1,
+            "push_credit": 1
+          }
+        },
+        {
+          "precondition": "Modeled credit_count=1",
+          "rst": 0,
+          "push_sender_in_reset": 0,
+          "push_credit_stall": 1,
+          "credit_withhold": 0,
+          "expected": {
+            "credit_available": 1,
+            "push_credit": 0
+          }
+        },
+        {
+          "precondition": "Hold reset state with credit_initial=0, then enter active mode so modeled credit_count=0",
+          "rst": 0,
+          "push_sender_in_reset": 0,
+          "push_credit_stall": 0,
+          "credit_withhold": 0,
+          "expected": {
+            "credit_available": 0,
+            "push_credit": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Basic counter increment/decrement behavior: verify pop_credit increments on posedge and previous-cycle push_credit decrements on the following posedge, using an explicit oracle state trace.",
+      "vectors": [
+        {
+          "step": "Initialize with credit_initial=0 under reset, release to active, then apply pop_credit=1 for one cycle with no previous push_credit",
+          "expected_next_credit_count": 1
+        },
+        {
+          "step": "Initialize with credit_initial=1 under reset, release to active with stall=0 and withhold=0 so push_credit=1 in cycle N, then at next posedge with pop_credit=0 expect decrement from previous-cycle push_credit",
+          "expected_next_credit_count": 0
+        }
+      ]
+    }
+  ],
+  "corner_case_tests": [
+    {
+      "description": "Independent-reset-source discrimination: keep rst=0, toggle push_sender_in_reset 0->1->0 while push_valid=1 and credit conditions would otherwise allow push_credit, and verify only pop_valid/push_credit are reset-blocked while push_receiver_in_reset stays 0.",
+      "vectors": [
+        {
+          "rst": 0,
+          "push_sender_in_reset": 1,
+          "push_valid": 1,
+          "push_credit_stall": 0,
+          "credit_initial": 1,
+          "credit_withhold": 0,
+          "expected": {
+            "push_receiver_in_reset": 0,
+            "pop_valid": 0,
+            "push_credit": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Data-path during reset: drive changing push_data values while rst=1 or push_sender_in_reset=1 and verify pop_data still tracks push_data exactly even though pop_valid remains 0.",
+      "vectors": [
+        {
+          "rst": 1,
+          "push_sender_in_reset": 0,
+          "push_valid": 1,
+          "push_data": 60,
+          "expected": {
+            "pop_data": 60,
+            "pop_valid": 0
+          }
+        },
+        {
+          "rst": 0,
+          "push_sender_in_reset": 1,
+          "push_valid": 1,
+          "push_data": 195,
+          "expected": {
+            "pop_data": 195,
+            "pop_valid": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "1-bit subtraction edge cases for credit_available: explicitly test all four combinations of observed credit_count and credit_withhold, treating subtraction as bit-level modulo-2 arithmetic rather than saturation.",
+      "vectors": [
+        {
+          "credit_count_model": 0,
+          "credit_withhold": 0,
+          "expected_credit_available": 0
+        },
+        {
+          "credit_count_model": 0,
+          "credit_withhold": 1,
+          "expected_credit_available": 1
+        },
+        {
+          "credit_count_model": 1,
+          "credit_withhold": 0,
+          "expected_credit_available": 1
+        },
+        {
+          "credit_count_model": 1,
+          "credit_withhold": 1,
+          "expected_credit_available": 0
+        }
+      ]
+    },
+    {
+      "description": "Priority check on push_credit: when reset state is active, verify push_credit remains 0 even if push_credit_stall=0 and credit_available would otherwise be nonzero; when active but stalled, verify stall suppresses push_credit despite credit_available being nonzero.",
+      "vectors": [
+        {
+          "rst": 1,
+          "push_sender_in_reset": 0,
+          "push_credit_stall": 0,
+          "credit_initial": 1,
+          "credit_withhold": 0,
+          "expected": {
+            "push_credit": 0
+          }
+        },
+        {
+          "rst": 0,
+          "push_sender_in_reset": 0,
+          "push_credit_stall": 1,
+          "credit_count_model": 1,
+          "credit_withhold": 0,
+          "expected": {
+            "push_credit": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Clock-edge sensitivity: change pop_credit and other controls around non-rising edges and verify credit_count does not change except on rising clk edges, while combinational outputs still respond immediately to current inputs.",
+      "vectors": [
+        {
+          "scenario": "Hold between posedges and toggle pop_credit without a rising edge",
+          "expected": {
+            "credit_count_stable": 1
+          }
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "Previous-cycle decrement discriminator: initialize credit_count=1, enter active mode with push_credit_stall=0 and credit_withhold=0 so push_credit=1 in cycle N, then in cycle N+1 force current combinational push_credit low by asserting stall while clocking. Expect the N+1 credit_count update to decrement because of previous-cycle push_credit, proving the decrement uses prev_push_credit rather than current push_credit.",
+      "num_cycles": 5
+    },
+    {
+      "description": "Simultaneous increment and previous-cycle decrement: create a cycle where prev_push_credit=1 and current pop_credit=1 at the same active posedge, and check the next 1-bit credit_count matches modulo-2 application of both contributions. This targets wrong precedence or missing one term.",
+      "num_cycles": 6
+    },
+    {
+      "description": "Reset-reload priority over update logic: while a decrement or increment would otherwise occur on the next posedge, assert rst=1 in one trial and push_sender_in_reset=1 in another, and verify credit_count reloads from credit_initial instead of applying active-mode arithmetic.",
+      "num_cycles": 6
+    },
+    {
+      "description": "Multi-cycle active trace covering both stored states: start from credit_initial=0, use pop_credit and prior push_credit events to drive credit_count through 0->1->0->1, checking at each cycle the coupled relations among credit_count, credit_available, and push_credit under both credit_withhold=0 and credit_withhold=1.",
+      "num_cycles": 10
+    },
+    {
+      "description": "Combinational-vs-registered separation: in active mode, change push_data and push_valid multiple times within and across cycles while keeping clock idle, and separately change pop_credit only at a later posedge. Verify pop_data/pop_valid react without latency, while credit_count changes only on the posedge.",
+      "num_cycles": 5
+    }
+  ],
+  "random_tests": {
+    "num_vectors": 80,
+    "description": "Constrained-random multi-cycle stimulus over rst, push_sender_in_reset, push_credit_stall, push_valid, pop_credit, credit_initial, credit_withhold, and 8-bit push_data. Maintain an independent 1-bit oracle state with reset priority and prev_push_credit-based decrement. Bias random generation toward transitions that frequently toggle reset sources independently, alternate stall, hit all four credit_count/credit_withhold combinations, and produce back-to-back cycles where push_credit was 1 previously but is 0 currently."
+  },
+  "key_discriminators": [
+    "push_sender_in_reset must force reset behavior for pop_valid, push_credit, and credit_count reload, but must not affect push_receiver_in_reset.",
+    "pop_valid must depend only on push_valid and reset state, not on push_credit_stall, pop_credit, credit_count, or credit_available.",
+    "pop_data must remain an unconditional combinational pass-through even during reset.",
+    "push_credit must be blocked by reset first, then by push_credit_stall, and otherwise follow nonzero literal 1-bit credit_available.",
+    "credit_available must use 1-bit subtraction semantics, exposing the 0-1 underflow case as bit-level wrap rather than saturation.",
+    "credit_count must update only on rising clk edges.",
+    "credit_count decrement must use previous-cycle push_credit, not current-cycle push_credit.",
+    "Reset reload from credit_initial must override increment/decrement behavior.",
+    "Simultaneous pop_credit and previous-cycle push_credit must both contribute to the next 1-bit credit_count update."
+  ]
+}

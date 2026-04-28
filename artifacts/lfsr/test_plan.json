@@ -1,0 +1,582 @@
+{
+  "module_type": "sequential",
+  "exhaustive_possible": false,
+  "total_input_bits": 12,
+  "reset_tests": [
+    {
+      "description": "Synchronous reset load: drive a nonzero evolving state first, then assert rst=1 with reinit=0 and advance=0 at a rising edge; verify state loads initial_state exactly on that posedge, not before, and out immediately matches initial_state[0].",
+      "cycles": 3,
+      "vectors": [
+        {
+          "precondition": "Reach state different from initial_state, for example initial_state=5'b10110, taps=5'b10010, advance for 1-2 cycles with rst=0 and reinit=0."
+        },
+        {
+          "at_posedge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "10110",
+            "taps": "10010"
+          },
+          "expect_after_edge": {
+            "out_state": "10110",
+            "out": 0
+          }
+        },
+        {
+          "timing_check": "Hold rst high only between edges first; verify no state change until posedge. This separates synchronous-reset behavior from incorrect asynchronous-reset mutants."
+        }
+      ]
+    },
+    {
+      "description": "Reset priority over all other controls: assert rst=1 with reinit=1 and advance=1 at a rising edge; verify state still loads initial_state and does not advance.",
+      "cycles": 2,
+      "vectors": [
+        {
+          "precondition": "Current state intentionally not equal to initial_state."
+        },
+        {
+          "at_posedge": {
+            "rst": 1,
+            "reinit": 1,
+            "advance": 1,
+            "initial_state": "01011",
+            "taps": "11101"
+          },
+          "expect_after_edge": {
+            "out_state": "01011",
+            "out": 1
+          }
+        }
+      ]
+    },
+    {
+      "description": "Reset reload with varied seeds including zero, all-ones, alternating, and single-hot values; verify reset always loads exact initial_state, with no dependence on taps.",
+      "cycles": 8,
+      "vectors": [
+        {
+          "at_posedge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "00000",
+            "taps": "10101"
+          },
+          "expect_after_edge": {
+            "out_state": "00000",
+            "out": 0
+          }
+        },
+        {
+          "at_posedge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "11111",
+            "taps": "00000"
+          },
+          "expect_after_edge": {
+            "out_state": "11111",
+            "out": 1
+          }
+        },
+        {
+          "at_posedge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "10101",
+            "taps": "11111"
+          },
+          "expect_after_edge": {
+            "out_state": "10101",
+            "out": 1
+          }
+        },
+        {
+          "at_posedge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "00001",
+            "taps": "01010"
+          },
+          "expect_after_edge": {
+            "out_state": "00001",
+            "out": 1
+          }
+        }
+      ]
+    }
+  ],
+  "normal_tests": [
+    {
+      "description": "Basic advance operation with explicit oracle. Use state=10110 and taps=10010 so feedback = ^(10110 & 10010)=^(10010)=1, therefore next_state must be 01101 and out must be 1.",
+      "vectors": [
+        {
+          "setup_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "10110",
+            "taps": "10010"
+          },
+          "expect_after_edge": {
+            "out_state": "10110",
+            "out": 0
+          }
+        },
+        {
+          "at_next_posedge": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1,
+            "initial_state": "10110",
+            "taps": "10010"
+          },
+          "expect_after_edge": {
+            "out_state": "01101",
+            "out": 1
+          }
+        }
+      ]
+    },
+    {
+      "description": "Hold behavior: with rst=0, reinit=0, advance=0, state must remain unchanged across multiple rising edges and outputs must stay stable.",
+      "vectors": [
+        {
+          "setup_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "11001",
+            "taps": "10110"
+          },
+          "expect_after_edge": {
+            "out_state": "11001",
+            "out": 1
+          }
+        },
+        {
+          "repeat_for_3_edges": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "00111",
+            "taps": "01001"
+          },
+          "expect_every_edge": {
+            "out_state": "11001",
+            "out": 1
+          }
+        }
+      ]
+    },
+    {
+      "description": "Reinit operation: from an arbitrary nonmatching current state, assert reinit=1 with rst=0 and advance=0; verify state reloads initial_state exactly.",
+      "vectors": [
+        {
+          "precondition": "Current state is not equal to initial_state, for example reach 01101 from prior advance."
+        },
+        {
+          "at_posedge": {
+            "rst": 0,
+            "reinit": 1,
+            "advance": 0,
+            "initial_state": "10001",
+            "taps": "11100"
+          },
+          "expect_after_edge": {
+            "out_state": "10001",
+            "out": 1
+          }
+        }
+      ]
+    },
+    {
+      "description": "Output consistency: after each state-changing edge, verify out always equals out_state[0] in the same cycle observation and does not lag by one clock.",
+      "vectors": [
+        {
+          "setup_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "00110",
+            "taps": "00011"
+          },
+          "expect_after_edge": {
+            "out_state": "00110",
+            "out": 0
+          }
+        },
+        {
+          "at_next_posedge": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1
+          },
+          "expect_relation": "out == out_state[0] immediately after edge"
+        },
+        {
+          "at_next_posedge": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 0
+          },
+          "expect_relation": "out == out_state[0] and both hold constant"
+        }
+      ]
+    }
+  ],
+  "corner_case_tests": [
+    {
+      "description": "Priority corner case: reinit and advance asserted together with rst=0. Verify reinit wins and state loads initial_state instead of shifting.",
+      "vectors": [
+        {
+          "precondition": "Current state differs from initial_state."
+        },
+        {
+          "at_posedge": {
+            "rst": 0,
+            "reinit": 1,
+            "advance": 1,
+            "initial_state": "01010",
+            "taps": "11111"
+          },
+          "expect_after_edge": {
+            "out_state": "01010",
+            "out": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Zero taps case: with taps=00000, feedback must always be 0. Starting from a nonzero seed, repeated advances must shift toward zero with exact trace 11111 -> 11110 -> 11100 -> 11000 -> 10000 -> 00000 -> 00000.",
+      "vectors": [
+        {
+          "setup_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "11111",
+            "taps": "00000"
+          },
+          "expect_after_edge": {
+            "out_state": "11111",
+            "out": 1
+          }
+        },
+        {
+          "advance_trace": [
+            "11110",
+            "11100",
+            "11000",
+            "10000",
+            "00000",
+            "00000"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "Zero initial_state absorbing case: load 00000, then advance with several different taps patterns; verify state remains 00000 for all advances.",
+      "vectors": [
+        {
+          "setup_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "00000",
+            "taps": "11111"
+          },
+          "expect_after_edge": {
+            "out_state": "00000",
+            "out": 0
+          }
+        },
+        {
+          "repeat_for_3_edges": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1,
+            "taps_sequence": [
+              "11111",
+              "00101",
+              "00000"
+            ]
+          },
+          "expect_every_edge": {
+            "out_state": "00000",
+            "out": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Shift-direction discriminator: choose a state whose correct MSB-shift result differs strongly from LSB-shift or feedback-in-MSB mutants. Example current_state=10001, taps=00001 gives feedback=1, so correct next_state=00011.",
+      "vectors": [
+        {
+          "setup_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "10001",
+            "taps": "00001"
+          },
+          "expect_after_edge": {
+            "out_state": "10001",
+            "out": 1
+          }
+        },
+        {
+          "at_next_posedge": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1
+          },
+          "expect_after_edge": {
+            "out_state": "00011",
+            "out": 1
+          },
+          "discriminates_against": [
+            "wrong shift toward LSB",
+            "feedback inserted into MSB",
+            "using state[4:1] instead of state[3:0]"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "Tap-alignment and reduction discriminator: choose taps and state so XOR of masked bits is 1 while OR, XNOR, or XOR of wrong slice differ. Example current_state=10101, taps=00111 gives masked bits 00101 and feedback=0.",
+      "vectors": [
+        {
+          "setup_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0,
+            "initial_state": "10101",
+            "taps": "00111"
+          },
+          "expect_after_edge": {
+            "out_state": "10101",
+            "out": 1
+          }
+        },
+        {
+          "at_next_posedge": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1
+          },
+          "expect_after_edge": {
+            "out_state": "01010",
+            "out": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Timing edge case for synchronous controls: toggle rst or reinit between rising edges and verify no update occurs until the next posedge; also verify no negedge-triggered behavior.",
+      "vectors": [
+        {
+          "precondition": "State known, for example 01110."
+        },
+        {
+          "between_edges": {
+            "rst": "pulse high then low without a rising clk edge"
+          },
+          "expect_immediate": {
+            "out_state": "01110",
+            "out": 0
+          }
+        },
+        {
+          "between_edges": {
+            "reinit": "pulse high then low around falling edge only"
+          },
+          "expect_immediate": {
+            "out_state": "01110",
+            "out": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Boundary patterns: seeds/taps of all-zeros, all-ones, alternating 10101/01010, and single-hot taps to expose wrong bit indexing and stale-output behavior.",
+      "vectors": [
+        {
+          "cases": [
+            {
+              "initial_state": "11111",
+              "taps": "11111"
+            },
+            {
+              "initial_state": "10101",
+              "taps": "01010"
+            },
+            {
+              "initial_state": "01010",
+              "taps": "10101"
+            },
+            {
+              "initial_state": "00100",
+              "taps": "00100"
+            }
+          ],
+          "expectation_rule": "For each advance, compute next_state = {state[3], state[2], state[1], state[0], ^(state & taps)} and check out == next_state[0] after the edge."
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "Multi-cycle golden trace with fixed taps to expose off-by-one and stale-output bugs. Start from initial_state=10110, taps=10010. Expected states after successive advance edges: 01101, 11011, 10111, 01110, 11101. Check out each cycle as LSB of listed state.",
+      "num_cycles": 6,
+      "expected_state_trace": [
+        "10110",
+        "01101",
+        "11011",
+        "10111",
+        "01110",
+        "11101"
+      ]
+    },
+    {
+      "description": "Interleaved hold/advance/reinit sequence: load seed, advance once, hold twice, advance once, reinit, hold once, advance once. This distinguishes unconditional-advance mutants and one-cycle-late update bugs.",
+      "num_cycles": 8,
+      "sequence": [
+        {
+          "controls": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0
+          },
+          "initial_state": "11010",
+          "taps": "10101",
+          "expect": "11010"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1
+          },
+          "expect": "10101"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 0
+          },
+          "expect": "10101"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 0
+          },
+          "expect": "10101"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1
+          },
+          "expect": "01010"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 1,
+            "advance": 0
+          },
+          "expect": "11010"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 0
+          },
+          "expect": "11010"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1
+          },
+          "expect": "10101"
+        }
+      ]
+    },
+    {
+      "description": "Priority sequence: after loading a known seed, apply advance, then a cycle with reinit=1 and advance=1, then another advance. Expected trace proves reinit overrides advance only on its asserted cycle.",
+      "num_cycles": 4,
+      "sequence": [
+        {
+          "controls": {
+            "rst": 1,
+            "reinit": 0,
+            "advance": 0
+          },
+          "initial_state": "10011",
+          "taps": "00101",
+          "expect": "10011"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1
+          },
+          "expect": "00111"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 1,
+            "advance": 1
+          },
+          "expect": "10011"
+        },
+        {
+          "controls": {
+            "rst": 0,
+            "reinit": 0,
+            "advance": 1
+          },
+          "expect": "00111"
+        }
+      ]
+    },
+    {
+      "description": "Control-edge timing sequence: change advance shortly after a posedge so it should only affect the next posedge; then change it around a falling edge to confirm no negedge sensitivity. Expected state trace must align exactly with rising-edge sampling only.",
+      "num_cycles": 5,
+      "sequence_rule": "Use a known seed and taps; sample outputs immediately after each posedge and verify state changes only on edges where control was stable high at that posedge."
+    }
+  ],
+  "random_tests": {
+    "num_vectors": 150,
+    "description": "Generate constrained-random multi-cycle tests over initial_state, taps, and controls. Each trial should begin by loading a random initial_state using rst or reinit, then run 5-15 cycles with random rst/reinit/advance values, biased toward simultaneous assertions and control toggles near non-sampling times. Use an independent cycle-accurate oracle: if rst then state=initial_state; else if reinit then state=initial_state; else if advance then state={state[3:0], ^(state & taps)} interpreted as new_state[4:1]=old_state[3:0], new_state[0]=feedback; else hold. Check after every posedge that out_state equals oracle state and out equals oracle state[0]. Include high weight on taps=00000, taps=11111, initial_state=00000, initial_state=11111, alternating patterns, and repeated hold cycles."
+  },
+  "key_discriminators": [
+    "Reset is synchronous active-high only; asserting rst between rising edges must not change state until the next posedge.",
+    "Priority must be rst > reinit > advance > hold.",
+    "When reinit and advance are both high on a rising edge, state must load initial_state rather than advance.",
+    "Advance uses current state, not next state, to compute feedback.",
+    "Correct next-state formula is new_state[4:1]=current_state[3:0] and new_state[0]=^(current_state & taps).",
+    "Shift direction is toward MSB side; current_state[4] is discarded.",
+    "Feedback bit is inserted into LSB, not MSB.",
+    "Feedback must be XOR reduction of masked bits only; wrong tap alignment, OR/XNOR, or full-state XOR should fail targeted vectors.",
+    "With advance=0 and rst=reinit=0, state must hold exactly across all rising edges.",
+    "With taps=00000, repeated advances must drive any state toward 00000 by zero-filling the LSB feedback.",
+    "With initial_state=00000, all subsequent states remain 00000 for any taps.",
+    "out must always equal out_state[0] and must not lag by one cycle or reflect a different state bit.",
+    "Outputs must reflect the updated registered state immediately after the state-changing posedge, not one cycle later.",
+    "No behavior should occur on falling edges or due to asynchronous sensitivity to rst/reinit."
+  ]
+}

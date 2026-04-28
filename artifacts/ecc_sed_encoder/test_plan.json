@@ -1,0 +1,393 @@
+{
+  "module_type": "combinational",
+  "exhaustive_possible": true,
+  "total_input_bits": 13,
+  "reset_tests": [
+    {
+      "description": "Assert and deassert synchronous active-high rst while holding data_valid=1 and a fixed data pattern such as 12'hA5C; verify enc_valid remains equal to data_valid and enc_codeword remains {^data, data}. This targets mutants that incorrectly insert rst into functional logic.",
+      "cycles": 4,
+      "vectors": [
+        {
+          "rst": 0,
+          "data_valid": 1,
+          "data": "0xA5C",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^data, data}"
+        },
+        {
+          "rst": 1,
+          "data_valid": 1,
+          "data": "0xA5C",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^data, data}"
+        },
+        {
+          "rst": 0,
+          "data_valid": 1,
+          "data": "0xA5C",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^data, data}"
+        }
+      ]
+    },
+    {
+      "description": "Toggle rst with data_valid=0 and arbitrary data; verify enc_valid stays 0 and do not check enc_codeword. This confirms reset does not create false valid pulses or forced codewords.",
+      "cycles": 3,
+      "vectors": [
+        {
+          "rst": 0,
+          "data_valid": 0,
+          "data": "0x000",
+          "expect_enc_valid": 0
+        },
+        {
+          "rst": 1,
+          "data_valid": 0,
+          "data": "0xFFF",
+          "expect_enc_valid": 0
+        },
+        {
+          "rst": 0,
+          "data_valid": 0,
+          "data": "0x123",
+          "expect_enc_valid": 0
+        }
+      ]
+    },
+    {
+      "description": "With data and data_valid held constant, toggle clk across multiple edges while rst stays 0; verify outputs do not change in response to clk edges. This targets accidental posedge/negedge registration or clk gating.",
+      "cycles": 6,
+      "vectors": [
+        {
+          "clk_activity": "toggle",
+          "rst": 0,
+          "data_valid": 1,
+          "data": "0x96B",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^data, data}"
+        }
+      ]
+    }
+  ],
+  "normal_tests": [
+    {
+      "description": "Exhaustive valid-data sweep: for every 12-bit data value from 0x000 to 0xFFF with data_valid=1, verify enc_valid=1 and enc_codeword={^data, data}. This is the primary oracle and will catch wrong parity polarity, wrong subset width, bit reordering, and wrong parity-bit placement.",
+      "vectors": [
+        {
+          "data_valid": 1,
+          "data_range": "0x000-0xFFF",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^data, data}"
+        }
+      ]
+    },
+    {
+      "description": "Validity gating check: drive representative data samples with data_valid=0 and verify enc_valid=0 only, without checking enc_codeword. Include transitions from valid to invalid and invalid to valid to confirm no stale or delayed valid behavior.",
+      "vectors": [
+        {
+          "data_valid": 0,
+          "data": "0x000",
+          "expect_enc_valid": 0
+        },
+        {
+          "data_valid": 0,
+          "data": "0xFFF",
+          "expect_enc_valid": 0
+        },
+        {
+          "data_valid": 0,
+          "data": "0xA55",
+          "expect_enc_valid": 0
+        },
+        {
+          "transition": "data_valid 0->1 with fixed data 0x3C3",
+          "expect_same_cycle_behavior": "enc_valid follows immediately; enc_codeword becomes {^data, data} without extra clock"
+        },
+        {
+          "transition": "data_valid 1->0 with fixed data 0x3C3",
+          "expect_same_cycle_behavior": "enc_valid drops immediately to 0"
+        }
+      ]
+    },
+    {
+      "description": "Representative direct-formula spot checks to make the mapping obvious for later oracle generation.",
+      "vectors": [
+        {
+          "data_valid": 1,
+          "data": "0x000",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword": "0x0000"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x001",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword": "0x1001"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x003",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword": "0x0003"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x800",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword": "0x1800"
+        },
+        {
+          "data_valid": 1,
+          "data": "0xAAA",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword": "0x0AAA"
+        }
+      ]
+    }
+  ],
+  "corner_case_tests": [
+    {
+      "description": "Boundary and structured patterns: all-zeros, all-ones, alternating bits, inverse alternating bits, single-hot, and single-cold patterns. These strongly discriminate wrong XOR polarity, incorrect bit slicing, and reversed/shifted data placement.",
+      "vectors": [
+        {
+          "data_valid": 1,
+          "data": "0x000",
+          "expect_enc_codeword_formula": "{0,12'h000}"
+        },
+        {
+          "data_valid": 1,
+          "data": "0xFFF",
+          "expect_enc_codeword_formula": "{0,12'hFFF}"
+        },
+        {
+          "data_valid": 1,
+          "data": "0xAAA",
+          "expect_enc_codeword_formula": "{0,12'hAAA}"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x555",
+          "expect_enc_codeword_formula": "{0,12'h555}"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x001",
+          "expect_enc_codeword_formula": "{1,12'h001}"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x800",
+          "expect_enc_codeword_formula": "{1,12'h800}"
+        },
+        {
+          "data_valid": 1,
+          "data": "0xFFE",
+          "expect_enc_codeword_formula": "{1,12'hFFE}"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x7FF",
+          "expect_enc_codeword_formula": "{1,12'h7FF}"
+        }
+      ]
+    },
+    {
+      "description": "Parity-subset discriminator set: choose vectors where inclusion or exclusion of a specific bit flips parity. These catch mutants using 11 bits, 13 bits, or an incorrect subset.",
+      "vectors": [
+        {
+          "data_valid": 1,
+          "data": "0x800",
+          "rationale": "Only bit 11 set; parity must include MSB data bit"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x001",
+          "rationale": "Only bit 0 set; parity must include LSB data bit"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x801",
+          "rationale": "Two distant bits set; parity must be 0"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x400",
+          "rationale": "Targets omission of bit 10"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x002",
+          "rationale": "Targets omission of bit 1"
+        }
+      ]
+    },
+    {
+      "description": "Parity-bit-position discriminator set: use vectors where parity differs from both data[11] and data[0] so MSB-vs-LSB append bugs are obvious.",
+      "vectors": [
+        {
+          "data_valid": 1,
+          "data": "0x001",
+          "expect_enc_codeword": "0x1001",
+          "rationale": "Correct output has parity in bit 12; appending parity at LSB would produce a different 13-bit word"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x800",
+          "expect_enc_codeword": "0x1800",
+          "rationale": "Separates prepended parity from accidental data shift or overwrite"
+        },
+        {
+          "data_valid": 1,
+          "data": "0x123",
+          "expect_enc_codeword_formula": "{^12'h123,12'h123}"
+        }
+      ]
+    },
+    {
+      "description": "Same-cycle response edge cases: change data and data_valid near a sampling event in the testbench and check outputs after a small combinational settle delay in the same cycle, not one clock later. This separates pure combinational logic from registered-output bugs.",
+      "vectors": [
+        {
+          "transition": "data 0x000->0x001 while data_valid=1",
+          "expect_same_cycle_behavior": "enc_codeword changes immediately from {0,0x000} to {1,0x001}"
+        },
+        {
+          "transition": "data_valid 0->1 while data=0xABC",
+          "expect_same_cycle_behavior": "enc_valid rises immediately and enc_codeword becomes {^12'hABC,12'hABC}"
+        },
+        {
+          "transition": "data_valid 1->0 while data=0xABC",
+          "expect_same_cycle_behavior": "enc_valid drops immediately; enc_codeword unchecked"
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "Multi-cycle independence sequence: across successive cycles, vary clk and rst while applying a deterministic stream of data/data_valid values. Expected outputs at each observation point depend only on current data_valid and current data, with no memory, no buffering, and no cycle latency.",
+      "num_cycles": 8,
+      "trace": [
+        {
+          "cycle": 0,
+          "rst": 0,
+          "data_valid": 1,
+          "data": "0x000",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword": "0x0000"
+        },
+        {
+          "cycle": 1,
+          "rst": 1,
+          "data_valid": 1,
+          "data": "0x001",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword": "0x1001"
+        },
+        {
+          "cycle": 2,
+          "rst": 0,
+          "data_valid": 0,
+          "data": "0xFFF",
+          "expect_enc_valid": 0
+        },
+        {
+          "cycle": 3,
+          "rst": 0,
+          "data_valid": 1,
+          "data": "0xFFF",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword": "0x0FFF"
+        },
+        {
+          "cycle": 4,
+          "rst": 0,
+          "data_valid": 1,
+          "data": "0x800",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword": "0x1800"
+        },
+        {
+          "cycle": 5,
+          "rst": 1,
+          "data_valid": 0,
+          "data": "0x123",
+          "expect_enc_valid": 0
+        },
+        {
+          "cycle": 6,
+          "rst": 0,
+          "data_valid": 1,
+          "data": "0x123",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^12'h123,12'h123}"
+        },
+        {
+          "cycle": 7,
+          "rst": 0,
+          "data_valid": 1,
+          "data": "0x122",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^12'h122,12'h122}"
+        }
+      ]
+    },
+    {
+      "description": "Valid-pulse sequence: issue isolated one-cycle pulses on data_valid with changing data values and verify enc_valid pulses in the same cycle only, with no one-cycle-early or one-cycle-late behavior.",
+      "num_cycles": 6,
+      "trace": [
+        {
+          "cycle": 0,
+          "data_valid": 0,
+          "data": "0x055",
+          "expect_enc_valid": 0
+        },
+        {
+          "cycle": 1,
+          "data_valid": 1,
+          "data": "0x055",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^12'h055,12'h055}"
+        },
+        {
+          "cycle": 2,
+          "data_valid": 0,
+          "data": "0x155",
+          "expect_enc_valid": 0
+        },
+        {
+          "cycle": 3,
+          "data_valid": 1,
+          "data": "0x155",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^12'h155,12'h155}"
+        },
+        {
+          "cycle": 4,
+          "data_valid": 0,
+          "data": "0x955",
+          "expect_enc_valid": 0
+        },
+        {
+          "cycle": 5,
+          "data_valid": 1,
+          "data": "0x955",
+          "expect_enc_valid": 1,
+          "expect_enc_codeword_formula": "{^12'h955,12'h955}"
+        }
+      ]
+    }
+  ],
+  "random_tests": {
+    "num_vectors": 200,
+    "description": "Generate 200 random trials with uniformly random data[11:0], random data_valid, and independent random clk/rst toggles. For each trial, if data_valid==1 check enc_valid==1 and enc_codeword=={^data,data}; if data_valid==0 check only enc_valid==0. Bias at least 25% of samples toward near-neighbor transitions from the previous data word to expose stale-output and delayed-update bugs, and include occasional rapid clk/rst toggles while inputs are stable to confirm clock/reset independence."
+  },
+  "key_discriminators": [
+    "Primary oracle is exact same-cycle mapping: if data_valid==1, enc_codeword must equal {^data[11:0], data[11:0]} and enc_valid must be 1.",
+    "If data_valid==0, only enc_valid==0 is checked; enc_codeword must not be overconstrained.",
+    "The parity bit is enc_codeword[12], not enc_codeword[0]; data must appear unchanged in enc_codeword[11:0].",
+    "The total 13-bit codeword must always have even parity whenever data_valid==1.",
+    "clk and rst are interface-only for this block; toggling either must not alter functional outputs except through changed data/data_valid.",
+    "Outputs are combinational, so any one-cycle-late, one-cycle-early, posedge-only, or negedge-only behavior is a bug.",
+    "Single-hot and single-cold data patterns discriminate wrong XOR polarity, wrong bit omission, and reversed or shifted data slices.",
+    "Transitions on data_valid must be immediate and not leave stale enc_valid or stale enc_codeword from a previous valid cycle."
+  ]
+}

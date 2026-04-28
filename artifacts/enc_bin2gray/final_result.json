@@ -2,10 +2,10 @@
   "problem_name": "enc_bin2gray",
   "best_score": 1.0,
   "iterations_used": 1,
-  "total_time_seconds": 62.60667276382446,
+  "total_time_seconds": 115.89440155029297,
   "num_mutants": 31,
-  "testbench_path": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/tb/enc_bin2gray_tb.v",
-  "artifacts_dir": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/artifacts/enc_bin2gray",
+  "testbench_path": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/enc_bin2gray_tb.v",
+  "artifacts_dir": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/artifacts/enc_bin2gray",
   "score_info": {
     "score": 1.0,
     "num_passing": 1,

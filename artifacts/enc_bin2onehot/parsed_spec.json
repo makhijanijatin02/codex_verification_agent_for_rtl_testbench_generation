@@ -36,17 +36,37 @@
   "clock_name": "clk",
   "has_reset": true,
   "reset_name": "rst",
-  "reset_type": "unspecified",
+  "reset_type": "none_functional_auxiliary_only",
   "is_sequential": false,
-  "behavior_summary": "When in_valid=1, the 4-bit in bus is interpreted as an integer 0\u201314 and the corresponding bit of the 15-bit out vector is set to 1 while all other bits are 0. When in_valid=0, the out vector is forced to 15'b0 regardless of in. clk and rst exist only for internal assertions and have no effect on the combinational encoding.",
+  "behavior_summary": "Purely combinational qualified binary-to-one-hot decoder. If in_valid is 1 and in is an integer from 0 through 14, out is a 15-bit vector with exactly one bit set high at index equal to the unsigned value of in, i.e. out = 15'b1 << in. If in_valid is 0, out is forced to 15'b0 regardless of in. The clk and rst ports exist only for internal simulation assertions and are not allowed to influence out.",
   "edge_cases": [
-    "in values above 14 (specifically 15) while in_valid=1 produce undefined behavior; the correct response is unspecified.",
-    "When in_valid=0, out is always zero even if in holds a valid value.",
-    "clk and rst do not gate or register outputs, so any assumption that they synchronize behavior would be incorrect."
+    "If in_valid is 0, out must be 15'b000000000000000 for all values of in, including 15.",
+    "If in_valid is 1 and in is in the valid range 0..14, exactly one output bit must be 1 and all others must be 0.",
+    "If in_valid is 1 and in equals 4'b1111 (decimal 15), behavior is explicitly undefined and should not be asserted strictly in the testbench.",
+    "There is no sequential state, no latency, and no dependence on clk or rst for functional behavior.",
+    "No overflow or wrap-around is specified or allowed for valid inputs; input 15 is not a wrap to bit 0 and is simply undefined.",
+    "The output should respond combinationally to changes on in_valid and in; exact propagation delay is not specified, so testbench should sample after a delta cycle or small delay rather than asserting zero-delay timing.",
+    "If in contains X or Z values, externally visible behavior is not specified by the natural-language spec and should not be checked strictly."
   ],
-  "state_transitions": [],
+  "state_transitions": [
+    "No internal states or state transitions; module is purely combinational."
+  ],
   "priorities": [
-    "in_valid gating dominates: in_valid=0 forces out=0 regardless of in value."
+    "in_valid gating has top functional priority: when in_valid=0, out must be all zeros regardless of in.",
+    "clk and rst have no functional priority because they must not affect the combinational decode behavior.",
+    "There are no simultaneous control conflicts beyond in_valid qualifying the decode."
+  ],
+  "mutation_risks": [
+    "Incorrect output width handling, such as generating 16 bits or misindexing the 15-bit vector.",
+    "Off-by-one decode bug, e.g. asserting out[in+1] or out[in-1] instead of out[in].",
+    "Bit-order reversal, such as treating input value 0 as MSB out[14] instead of LSB out[0].",
+    "Forgetting to gate with in_valid, causing decode activity when in_valid=0.",
+    "Driving multiple bits high instead of exactly one bit for valid inputs.",
+    "Incorrect handling of boundary inputs 0 and 14.",
+    "Improperly defining behavior for input 15, such as wrapping, saturating, or asserting a valid output bit.",
+    "Accidentally using clk or rst in the functional logic, creating non-combinational or reset-dependent behavior.",
+    "One or more output bits stuck at 0 or 1 due to decoder implementation mistakes.",
+    "Partial decode errors affecting only certain input patterns, especially around transitions where multiple input bits differ."
   ],
   "output_behavior": {
     "combinational_outputs": [

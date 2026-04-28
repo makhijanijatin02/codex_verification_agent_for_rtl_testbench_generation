@@ -1,0 +1,111 @@
+{
+  "module_name": "lfsr",
+  "ports": [
+    {
+      "name": "clk",
+      "direction": "input",
+      "width": 1,
+      "type": "clock"
+    },
+    {
+      "name": "rst",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "reinit",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "advance",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "out",
+      "direction": "output",
+      "width": 1,
+      "type": "data"
+    },
+    {
+      "name": "initial_state",
+      "direction": "input",
+      "width": 5,
+      "type": "data"
+    },
+    {
+      "name": "taps",
+      "direction": "input",
+      "width": 5,
+      "type": "data"
+    },
+    {
+      "name": "out_state",
+      "direction": "output",
+      "width": 5,
+      "type": "data"
+    }
+  ],
+  "has_clock": true,
+  "clock_name": "clk",
+  "has_reset": true,
+  "reset_name": "rst",
+  "reset_type": "sync_active_high",
+  "is_sequential": true,
+  "behavior_summary": "This is a 5-bit sequential Fibonacci LFSR. A 5-bit internal state register updates on each positive edge of clk. If rst is high at the clock edge, the state is synchronously loaded with initial_state. Otherwise, if reinit is high at the clock edge, the state is synchronously loaded with initial_state. Otherwise, if advance is high at the clock edge, the next state is computed from the current state by forming feedback_bit = ^(out_state & taps), then shifting the current state toward the MSB side so that new_state[4:1] = current_state[3:0] and new_state[0] = feedback_bit. Otherwise, the state remains unchanged. The output out_state always reflects the full current 5-bit state, and out always equals out_state[0].",
+  "edge_cases": [
+    "If rst is high on a rising clock edge, state loads initial_state synchronously; there is no asynchronous reset behavior.",
+    "If reinit is high on a rising clock edge, state loads initial_state instead of advancing.",
+    "If both reinit and advance are high on a rising clock edge, reinit takes priority and the state loads initial_state.",
+    "If both rst and reinit are high on a rising clock edge, the spec implies rst has priority because reset behavior is defined separately and is typically highest priority in synchronous logic; both actions load the same value initial_state anyway, so externally the result is identical.",
+    "If rst, reinit, and advance are all low on a rising clock edge, state holds its previous value.",
+    "The feedback bit is the XOR reduction of the 5-bit vector (current_state & taps); equivalently feedback_bit = (current_state[0]&taps[0]) ^ (current_state[1]&taps[1]) ^ (current_state[2]&taps[2]) ^ (current_state[3]&taps[3]) ^ (current_state[4]&taps[4]).",
+    "The shift direction is explicit: current_state[3:0] move to new_state[4:1], current_state[4] is discarded, and feedback_bit is inserted into new_state[0].",
+    "No saturation, overflow, or underflow concept applies; state evolution is modulo the 5-bit shift/register update rule.",
+    "If taps is 5'b00000, feedback_bit is always 0, so repeated advances eventually shift the register toward 0.",
+    "If initial_state is 5'b00000 and the module is reset or reinitialized to zero, subsequent advances keep state at zero for any taps.",
+    "Outputs are functions of the registered current state; after a clock edge that changes state, out_state and out reflect the updated state with normal register propagation, not one cycle later.",
+    "The spec does not define any special illegal state handling, lockup avoidance, maximal-length guarantee, or seed restrictions."
+  ],
+  "state_transitions": [
+    "ANY_STATE -> initial_state when rst is asserted at posedge clk",
+    "ANY_STATE -> initial_state when rst is low and reinit is asserted at posedge clk",
+    "CURRENT_STATE -> {CURRENT_STATE[3], CURRENT_STATE[2], CURRENT_STATE[1], CURRENT_STATE[0], ^(CURRENT_STATE & taps)} when rst and reinit are low and advance is asserted at posedge clk",
+    "CURRENT_STATE -> CURRENT_STATE when rst, reinit, and advance are all low at posedge clk"
+  ],
+  "priorities": [
+    "rst > reinit > advance > hold",
+    "When reinit and advance are both asserted, reinit overrides state advancement",
+    "out is derived from out_state[0] and should not have independent behavior"
+  ],
+  "mutation_risks": [
+    "Wrong shift direction, such as shifting toward LSB instead of toward MSB",
+    "Inserting feedback bit into MSB instead of LSB",
+    "Using current_state[4:1] instead of current_state[3:0] for the shifted portion",
+    "Failing to discard current_state[4] during advance",
+    "Computing feedback from the wrong source bits or wrong tap alignment",
+    "Using OR-reduction, XNOR, or full-vector XOR instead of XOR reduction of (state & taps)",
+    "Computing feedback from next state instead of current state",
+    "Making advance unconditional so state changes even when advance is low",
+    "Giving advance priority over reinit",
+    "Implementing rst as asynchronous instead of synchronous",
+    "Making out equal to the wrong bit, commonly MSB instead of LSB",
+    "Registering out separately and allowing it to lag out_state[0] by one cycle",
+    "Loading a constant or zero on reset/reinit instead of initial_state",
+    "Using taps during reinit/reset when state should simply load initial_state",
+    "Off-by-one-cycle bugs where advance/reinit effects appear one edge early or late"
+  ],
+  "output_behavior": {
+    "combinational_outputs": [
+      "out",
+      "out_state"
+    ],
+    "registered_outputs": [
+      "out_state"
+    ]
+  }
+}

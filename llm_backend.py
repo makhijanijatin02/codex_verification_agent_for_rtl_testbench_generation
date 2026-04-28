@@ -29,10 +29,10 @@ class LLMBackend:
 class CodexCLIBackend(LLMBackend):
     """Local Codex CLI backend using a non-interactive `codex exec` command."""
 
-    def __init__(self, model: str | None, cwd: str | None = None, timeout_seconds: int = 180):
+    def __init__(self, model: str | None, cwd: str | None = None, timeout_seconds: int = 1800):
         self.model = model or os.environ.get("CODEX_MODEL")
         self.cwd = cwd or str(Path(__file__).parent)
-        self.timeout_seconds = int(os.environ.get("CODEX_TIMEOUT_SECONDS", timeout_seconds))
+        self.timeout_seconds = max(1800, int(os.environ.get("CODEX_TIMEOUT_SECONDS", timeout_seconds)))
         self.base_command = self._resolve_base_command()
 
     def _resolve_base_command(self) -> list[str]:

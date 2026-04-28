@@ -1,0 +1,104 @@
+You are an expert Verilog testbench writer for a single-clock ready/valid FIFO.
+
+PRIMARY GOAL:
+- Generate a COMPLETE, self-checking Verilog testbench that is discriminative while remaining faithful to the specification.
+- Use only behaviors that are explicitly guaranteed by the spec as strict assertions.
+- Do not infer a full combinational truth table around empty/full boundary cases unless the specification states it explicitly.
+
+REQUIREMENTS:
+1. The testbench must be compatible with `iverilog`
+2. Include `timescale 1ns/1ps`
+3. The module name must be exactly `tb`
+4. Use a single generated clock
+5. Use self-checking logic with clear pass/fail conditions
+6. Print `PASS` only if all checks succeed
+7. Always call `$finish`
+
+MANDATORY TESTBENCH SHAPE:
+- Generate the testbench as a small sequence of named sections in code comments, in this exact order:
+  1. `RESET_IDLE_CHECKS`
+  2. `EMPTY_BYPASS_CHECKS`
+  3. `ONE_ITEM_STORE_AND_IDLE_CHECKS`
+  4. `ONE_ITEM_POP_NEXT_CHECKS`
+  5. `BUFFERED_ORDERING_CHECKS`
+  6. `TWELVE_TO_THIRTEEN_NEXT_CHECKS`
+  7. `FULL_IDLE_CHECKS`
+- Each section must contain only the checks appropriate to that section.
+- Do not merge these into one monolithic scoreboard.
+- Do not add extra strict-check sections beyond these seven.
+- Use the section comments literally so an external validator can recognize the intended structure.
+
+ALLOWED STRICT CHECKS FOR THIS MODULE:
+- Idle synchronous reset after a qualifying clock edge with idle handshake inputs:
+  - `empty=1`
+  - `full=0`
+  - `items=0`
+  - `slots=13`
+  - `pop_valid=0`
+  - `push_ready=1`
+- Explicit same-cycle empty bypass only when `push_valid=1` and `pop_ready=1` while empty:
+  - `pop_valid=1`
+  - `pop_data=push_data`
+  - after the clock edge, the FIFO remains empty
+- Buffered one-item stable idle state after storing one item with `pop_ready=0`:
+  - `empty=0`
+  - `full=0`
+  - `items=1`
+  - `slots=12`
+  - `pop_valid=1`
+  - `pop_data=head`
+  - `push_ready=1`
+- One-item idle `*_next` state:
+  - `empty_next=0`
+  - `full_next=0`
+  - `items_next=1`
+  - `slots_next=12`
+- One-item pop request `*_next` state:
+  - `empty_next=1`
+  - `full_next=0`
+  - `items_next=0`
+  - `slots_next=13`
+  - `pop_valid=1`
+  - `pop_data=head` on the handshake cycle
+- 12-item plus push request `*_next` state:
+  - `full_next=1`
+  - `items_next=13`
+- Stable full idle state:
+  - `empty=0`
+  - `full=1`
+  - `items=13`
+  - `slots=0`
+  - `pop_valid=1`
+  - `push_ready=0`
+- FIFO ordering for clearly accepted buffered transactions
+- Same-cycle simultaneous buffered push+pop:
+  - check the old head on the handshake cycle
+  - check the resulting occupancy/order after the clock edge
+
+FORBIDDEN STRICT CHECKS FOR THIS MODULE:
+- Do not require `pop_valid==0` in an empty pre-edge cycle just because bypass is not occurring when `push_valid=1` and `pop_ready=0`
+- Do not require exact `empty/full/items/slots` values during the same combinational cycle as an empty-state bypass transfer
+- Do not check `items_next`, `slots_next`, `empty_next`, or `full_next` during reset unless the spec explicitly defines predictor behavior under reset
+- Do not check the popped head value after the accepting pop clock edge; check it on the handshake cycle before the edge
+- Do not build a full cycle-by-cycle queue-depth scoreboard for every state
+- Do not use random stress as the primary discriminator
+- Do not use timeout loops or open-ended polling
+
+ORACLE SHAPE:
+- Use a very small reference queue model for buffered ordering only
+- Use the reference model only for:
+  - buffered visible head before a pop
+  - resulting ordering after accepted pushes/pops
+- Keep status checks limited to the allowed stable states listed above
+- Prefer a smaller trustworthy oracle over a larger speculative oracle
+- Structure the TB so each mandatory section focuses on one narrow behavior, rather than a generic global checker.
+
+SEQUENTIAL SAFETY:
+- Keep each helper aligned to exactly one intended cycle
+- For synchronous reset, check reset-state outputs only after the active clock edge
+- Do not let helper tasks accidentally consume extra clock edges
+
+OUTPUT:
+- Return ONLY Verilog code
+- Do not include markdown fences
+- Do not include explanation

@@ -1,0 +1,572 @@
+{
+  "module_type": "sequential",
+  "oracle_style": "cycle_accurate",
+  "exhaustive_possible": false,
+  "total_input_bits": 13,
+  "safe_checks": [
+    "`value` updates only on rising edges of `clk`; it must remain stable between rising edges regardless of input changes.",
+    "On any rising edge with `rst=1`, `value` must load `initial_value`.",
+    "On any rising edge with `rst=0` and `reinit=1`, `value` must load `initial_value`.",
+    "When `reinit=1`, concurrent `incr_valid`/`decr_valid` requests must be ignored for the state update.",
+    "When `rst=0`, `reinit=0`, `incr_valid=1`, and `decr_valid=0`, next state is `(value + incr) mod 11`.",
+    "When `rst=0`, `reinit=0`, `incr_valid=0`, and `decr_valid=1`, next state is `(value - decr) mod 11`.",
+    "When `rst=0`, `reinit=0`, `incr_valid=1`, and `decr_valid=1`, next state is `(value + incr - decr) mod 11`.",
+    "When `rst=0`, `reinit=0`, and both valids are 0, the counter holds its state.",
+    "Overflow and underflow must wrap in the legal state domain 0..10, not saturate and not wrap modulo 16.",
+    "`value_next` is combinational and should match the next-state function for guaranteed cases that do not rely on ambiguous reset interpretation.",
+    "For legal stimuli with `incr,decr` in 0..3 and in-range state 0..10, both `value` and checked `value_next` outcomes must remain in 0..10."
+  ],
+  "unsafe_checks": [
+    "Do not strictly assert that `value_next` reflects `rst=1`; this is a strong inference but explicitly marked ambiguous.",
+    "Do not strictly assert any behavior when `initial_value` is outside 0..10.",
+    "Do not strictly assert exact propagation latency or delta-cycle timing for `value_next`; only allow settle-before-check behavior.",
+    "Do not strictly assert any pre-reset or power-up value for `value` before the first controlled rising edge.",
+    "Do not strictly assert behavior for illegal `incr`/`decr` encodings above 3."
+  ],
+  "reset_tests": [
+    {
+      "description": "Synchronous reset loads `initial_value` on the next rising edge, not immediately. Drive a non-reset arithmetic cycle first to move `value` away from `initial_value`, then assert `rst=1` between clock edges and verify `value` does not change until the next rising edge, where it becomes `initial_value`.",
+      "cycles": 3,
+      "vectors": [
+        {
+          "precondition": "Reach a known nontrivial state, e.g. `value=6`."
+        },
+        {
+          "inputs_before_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 1,
+            "initial_value": 4,
+            "incr": 3,
+            "decr": 2
+          },
+          "strict_checks_before_edge": [
+            "`value` stays at 6 until the rising edge."
+          ],
+          "strict_checks_after_edge": [
+            "`value` becomes 4."
+          ]
+        }
+      ]
+    },
+    {
+      "description": "Reset priority over reinit and arithmetic. Assert `rst=1`, `reinit=1`, and active increment/decrement together on a rising edge; `value` must still load `initial_value`.",
+      "cycles": 1,
+      "vectors": [
+        {
+          "start_value": 9,
+          "inputs_at_edge": {
+            "rst": 1,
+            "reinit": 1,
+            "incr_valid": 1,
+            "decr_valid": 1,
+            "initial_value": 7,
+            "incr": 3,
+            "decr": 1
+          },
+          "expected_value_after_edge": 7
+        }
+      ]
+    },
+    {
+      "description": "Repeated reset with changing `initial_value`. Keep `rst=1` across multiple rising edges while changing `initial_value`; each rising edge must load the currently presented `initial_value`.",
+      "cycles": 3,
+      "vectors": [
+        {
+          "inputs_at_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 0,
+            "initial_value": 2,
+            "incr": 0,
+            "decr": 0
+          },
+          "expected_value_after_edge": 2
+        },
+        {
+          "inputs_at_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 0,
+            "initial_value": 10,
+            "incr": 0,
+            "decr": 0
+          },
+          "expected_value_after_edge": 10
+        }
+      ]
+    }
+  ],
+  "normal_tests": [
+    {
+      "description": "Basic hold, increment, decrement, and combined net-change behavior with legal operands. Also check `value_next` combinationally for non-reset cases after inputs settle.",
+      "vectors": [
+        {
+          "start_value": 5,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 0,
+            "initial_value": 3,
+            "incr": 2,
+            "decr": 1
+          },
+          "expected_value_next": 5,
+          "expected_value_after_edge": 5
+        },
+        {
+          "start_value": 5,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 0,
+            "initial_value": 0,
+            "incr": 2,
+            "decr": 0
+          },
+          "expected_value_next": 7,
+          "expected_value_after_edge": 7
+        },
+        {
+          "start_value": 7,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 0,
+            "decr": 3
+          },
+          "expected_value_next": 4,
+          "expected_value_after_edge": 4
+        },
+        {
+          "start_value": 4,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 3,
+            "decr": 1
+          },
+          "expected_value_next": 6,
+          "expected_value_after_edge": 6
+        }
+      ]
+    },
+    {
+      "description": "Reinit overrides arithmetic. Use a state where arithmetic would obviously differ from `initial_value` to catch missed priority bugs.",
+      "vectors": [
+        {
+          "start_value": 8,
+          "inputs": {
+            "rst": 0,
+            "reinit": 1,
+            "incr_valid": 1,
+            "decr_valid": 1,
+            "initial_value": 3,
+            "incr": 3,
+            "decr": 0
+          },
+          "expected_value_next": 3,
+          "expected_value_after_edge": 3
+        }
+      ]
+    },
+    {
+      "description": "Combinational-vs-registered separation. Change arithmetic inputs between rising edges and verify `value_next` follows the new next-state function after settle while `value` remains unchanged until the next rising edge.",
+      "vectors": [
+        {
+          "start_value": 6,
+          "phase_1_inputs_between_edges": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 0,
+            "initial_value": 0,
+            "incr": 1,
+            "decr": 0
+          },
+          "expected_value_next_phase_1": 7
+        },
+        {
+          "phase_2_inputs_between_edges": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 0,
+            "decr": 2
+          },
+          "expected_value_next_phase_2": 4
+        },
+        {
+          "strict_checks_before_edge": [
+            "`value` stays 6 during both input changes."
+          ],
+          "expected_value_after_next_edge": 4
+        }
+      ]
+    }
+  ],
+  "corner_case_tests": [
+    {
+      "description": "Overflow wrap modulo 11, not saturation and not modulo 16.",
+      "vectors": [
+        {
+          "start_value": 9,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 0,
+            "initial_value": 0,
+            "incr": 3,
+            "decr": 0
+          },
+          "expected_value_next": 1,
+          "expected_value_after_edge": 1
+        },
+        {
+          "start_value": 10,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 0,
+            "initial_value": 0,
+            "incr": 1,
+            "decr": 0
+          },
+          "expected_value_next": 0,
+          "expected_value_after_edge": 0
+        }
+      ]
+    },
+    {
+      "description": "Underflow wrap modulo 11, not clamp at 0 and not raw 4-bit negative wrap.",
+      "vectors": [
+        {
+          "start_value": 1,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 0,
+            "decr": 3
+          },
+          "expected_value_next": 9,
+          "expected_value_after_edge": 9
+        },
+        {
+          "start_value": 0,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 0,
+            "decr": 1
+          },
+          "expected_value_next": 10,
+          "expected_value_after_edge": 10
+        }
+      ]
+    },
+    {
+      "description": "Zero net change cases. Catch bugs that prioritize one valid over the other or mishandle equal operands.",
+      "vectors": [
+        {
+          "start_value": 6,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 2,
+            "decr": 2
+          },
+          "expected_value_next": 6,
+          "expected_value_after_edge": 6
+        },
+        {
+          "start_value": 10,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 3,
+            "decr": 3
+          },
+          "expected_value_next": 10,
+          "expected_value_after_edge": 10
+        }
+      ]
+    },
+    {
+      "description": "Boundary and representative state coverage with minimal redundancy: all-zeros control, max legal data, and alternating-like patterns on 2-bit operands.",
+      "vectors": [
+        {
+          "start_value": 0,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 0,
+            "initial_value": 10,
+            "incr": 3,
+            "decr": 0
+          },
+          "expected_value_after_edge": 3
+        },
+        {
+          "start_value": 10,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 0,
+            "decr": 2
+          },
+          "expected_value_after_edge": 8
+        },
+        {
+          "start_value": 5,
+          "inputs": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 1,
+            "decr": 2
+          },
+          "expected_value_after_edge": 4
+        }
+      ]
+    },
+    {
+      "description": "Wrong-edge and stale-output exposure. Toggle inputs around non-rising phases and verify no registered update occurs until a rising edge; `value_next` must reflect current state and current inputs, not previous-cycle state.",
+      "vectors": [
+        {
+          "start_value": 3,
+          "between_edges_sequence": [
+            {
+              "inputs": {
+                "rst": 0,
+                "reinit": 0,
+                "incr_valid": 1,
+                "decr_valid": 0,
+                "initial_value": 0,
+                "incr": 3,
+                "decr": 0
+              },
+              "expected_value_next": 6
+            },
+            {
+              "inputs": {
+                "rst": 0,
+                "reinit": 0,
+                "incr_valid": 0,
+                "decr_valid": 1,
+                "initial_value": 0,
+                "incr": 0,
+                "decr": 1
+              },
+              "expected_value_next": 2
+            }
+          ],
+          "strict_checks": [
+            "`value` remains 3 until the next rising edge.",
+            "At the next rising edge, `value` becomes 2."
+          ]
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "Priority and state-transition sweep from a known starting point. Start by loading `initial_value=0` with reset, then apply a deterministic multi-cycle trace that exercises hold, increment-only, decrement-only, both-valid net change, overflow, underflow, reinit override, and reset override.",
+      "num_cycles": 9,
+      "trace": [
+        {
+          "cycle": 1,
+          "inputs_at_edge": {
+            "rst": 1,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 0,
+            "initial_value": 0,
+            "incr": 0,
+            "decr": 0
+          },
+          "expected_value": 0
+        },
+        {
+          "cycle": 2,
+          "inputs_at_edge": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 0,
+            "initial_value": 0,
+            "incr": 3,
+            "decr": 0
+          },
+          "expected_value": 3
+        },
+        {
+          "cycle": 3,
+          "inputs_at_edge": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 1,
+            "decr": 1
+          },
+          "expected_value": 3
+        },
+        {
+          "cycle": 4,
+          "inputs_at_edge": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 0,
+            "decr": 3
+          },
+          "expected_value": 0
+        },
+        {
+          "cycle": 5,
+          "inputs_at_edge": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 1,
+            "initial_value": 0,
+            "incr": 0,
+            "decr": 1
+          },
+          "expected_value": 10
+        },
+        {
+          "cycle": 6,
+          "inputs_at_edge": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 1,
+            "decr_valid": 0,
+            "initial_value": 0,
+            "incr": 3,
+            "decr": 0
+          },
+          "expected_value": 2
+        },
+        {
+          "cycle": 7,
+          "inputs_at_edge": {
+            "rst": 0,
+            "reinit": 1,
+            "incr_valid": 1,
+            "decr_valid": 1,
+            "initial_value": 8,
+            "incr": 3,
+            "decr": 2
+          },
+          "expected_value": 8
+        },
+        {
+          "cycle": 8,
+          "inputs_at_edge": {
+            "rst": 0,
+            "reinit": 0,
+            "incr_valid": 0,
+            "decr_valid": 0,
+            "initial_value": 0,
+            "incr": 0,
+            "decr": 0
+          },
+          "expected_value": 8
+        },
+        {
+          "cycle": 9,
+          "inputs_at_edge": {
+            "rst": 1,
+            "reinit": 1,
+            "incr_valid": 1,
+            "decr_valid": 0,
+            "initial_value": 5,
+            "incr": 3,
+            "decr": 0
+          },
+          "expected_value": 5
+        }
+      ]
+    },
+    {
+      "description": "Full-state modulo walk to expose off-by-one, modulo-16, and stale-state bugs. Starting from `value=0`, apply four `+3` cycles and four `-3` cycles; this traverses many states and crosses both wrap boundaries.",
+      "num_cycles": 8,
+      "trace": [
+        {
+          "expected_values_after_each_edge": [
+            3,
+            6,
+            9,
+            1,
+            9,
+            6,
+            3,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "description": "One-cycle-late / one-cycle-early detection using `value_next` and `value` together. In each cycle, check combinational `value_next` before the edge and registered `value` after the edge against the same software-model step.",
+      "num_cycles": 5,
+      "trace": [
+        {
+          "cycle_pattern": "Use a mixed sequence such as hold, +2, both-valid net -1, reinit to 4, +3 from 4 -> 7. Before each edge, `value_next` must equal the predicted next state; after the edge, `value` must equal that same predicted state."
+        }
+      ]
+    }
+  ],
+  "random_tests": {
+    "num_vectors": 200,
+    "description": "Run 200 random legal cycles using a software model over state 0..10. Constrain `incr` and `decr` to 0..3. Bias generation toward high-discrimination cases: about 15% `rst=1`, 15% `reinit=1` with `rst=0`, 25% both valids high, 15% hold cycles, and the remainder split between increment-only and decrement-only. Bias `initial_value` toward 0, 1, 9, and 10 while still covering all legal 0..10 values. Before each rising edge, check `value_next` strictly only for non-reset cases and after allowing combinational settle; on each rising edge, update the model and check `value`. Randomly change inputs multiple times between rising edges on some cycles to catch stale `value_next` and wrong-edge registered updates."
+  },
+  "key_discriminators": [
+    "Synchronous reset only: asserting `rst` between edges must not change `value` until the next rising edge.",
+    "Reset and reinit load `initial_value`, not zero.",
+    "`rst` has higher priority than `reinit`, and `reinit` has higher priority than arithmetic.",
+    "Both valids high must apply the net signed change `(incr - decr)`, not increment-priority or decrement-priority behavior.",
+    "Wrap domain is modulo 11 over states 0..10, not saturation and not raw 4-bit modulo 16.",
+    "Zero net change with both valids high and equal operands must hold state.",
+    "`value_next` must behave combinationally from the current state and current inputs, while `value` remains edge-triggered and updates on the next rising edge only.",
+    "Changing arithmetic inputs between edges should immediately change checked `value_next` after settle but must not change `value` until the edge.",
+    "Boundary cases `10 + 1 -> 0`, `9 + 3 -> 1`, `0 - 1 -> 10`, and `1 - 3 -> 9` strongly separate correct modulo-11 arithmetic from common mutants.",
+    "Reinit with concurrent arithmetic must ignore the arithmetic entirely."
+  ]
+}

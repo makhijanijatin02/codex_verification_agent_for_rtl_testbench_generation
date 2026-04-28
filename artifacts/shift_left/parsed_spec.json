@@ -1,0 +1,77 @@
+{
+  "module_name": "shift_left",
+  "ports": [
+    {
+      "name": "out_valid",
+      "direction": "output",
+      "width": 1,
+      "type": "valid"
+    },
+    {
+      "name": "in",
+      "direction": "input",
+      "width": 96,
+      "type": "data"
+    },
+    {
+      "name": "shift",
+      "direction": "input",
+      "width": 3,
+      "type": "control"
+    },
+    {
+      "name": "fill",
+      "direction": "input",
+      "width": 12,
+      "type": "data"
+    },
+    {
+      "name": "out",
+      "direction": "output",
+      "width": 96,
+      "type": "data"
+    }
+  ],
+  "has_clock": false,
+  "clock_name": "",
+  "has_reset": false,
+  "reset_name": "",
+  "reset_type": "none",
+  "is_sequential": false,
+  "behavior_summary": "Purely combinational symbol-wise left shifter over 8 symbols of 12 bits each. Treat `in` as 8 packed 12-bit symbols indexed from 0 to 7, where the example implies symbol 0 is the least-significant 12-bit slice and the packed output ordering is `{out[7], out[6], ..., out[0]}`. For legal shifts 0 through 5 inclusive, `out_valid` must be 1. For each symbol index i in 0..7, if `i < shift` then `out[i] = fill`; otherwise `out[i] = in[i - shift]`. Equivalently, for legal `shift = s`, the packed output is `{in[7-s], in[6-s], ..., in[0], fill, ..., fill}` with exactly `s` copies of `fill` appended in the least-significant symbol positions. If `shift > 5`, `out_valid` must be 0; `out` is still driven but its value is explicitly not guaranteed and should not be strictly checked.",
+  "edge_cases": [
+    "Shift 0: no symbols move; `out` must equal `in` exactly and `out_valid` must be 1.",
+    "Shift 1 through 5: lower-index output symbol slots 0 through `shift-1` are filled with `fill`, and higher-index slots copy from correspondingly lower input indices.",
+    "Shift 5: largest legal shift; output must be `{in[2], in[1], in[0], fill, fill, fill, fill, fill}` and `out_valid` must be 1.",
+    "Shift 6 or 7: illegal because maximum supported shift is 5; `out_valid` must be 0.",
+    "For illegal shifts, `out` remains driven but is not guaranteed meaningful; a testbench should avoid strict value checking on `out` when `out_valid` is 0.",
+    "There is no bit-level shift within a 12-bit symbol; movement is by whole-symbol positions only.",
+    "No overflow or wrap-around is specified or allowed; symbols shifted out of the high end are discarded, not wrapped back into low positions.",
+    "The `fill` value is replicated per vacated symbol slot; it is not a single 12-bit field placed once."
+  ],
+  "state_transitions": [],
+  "priorities": [
+    "Validity check priority: `out_valid` is determined solely by whether `shift <= 5`.",
+    "For legal shifts, per-symbol selection priority is `fill` for indices `i < shift`, otherwise copied input symbol `in[i-shift]`.",
+    "No sequential control-signal priority exists because the module is purely combinational and has no clock/reset."
+  ],
+  "mutation_risks": [
+    "Implementing a right shift instead of the specified left-by-symbol shift.",
+    "Treating the operation as a 96-bit bitwise shift rather than an 8x12-bit symbol shift.",
+    "Reversing symbol indexing or packed concatenation order, especially due to ambiguity between MSB-first packing and logical symbol numbering.",
+    "Using `out[i] = in[i + shift]` instead of `in[i - shift]`.",
+    "Filling vacated positions on the wrong side of the vector.",
+    "Incorrect legal-range check such as allowing 6 or disallowing 5.",
+    "Driving `out_valid` incorrectly for shift values 0 or 5 due to off-by-one comparison bugs.",
+    "Checking or constraining `out` for illegal shifts even though the spec says it is not guaranteed meaningful.",
+    "Replicating `fill` at bit granularity or only once instead of once per vacated 12-bit symbol.",
+    "Dropping or corrupting symbols near the boundary cases for shifts 4 and 5."
+  ],
+  "output_behavior": {
+    "combinational_outputs": [
+      "out_valid",
+      "out"
+    ],
+    "registered_outputs": []
+  }
+}

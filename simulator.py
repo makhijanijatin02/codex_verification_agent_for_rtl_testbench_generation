@@ -101,6 +101,17 @@ class Simulator:
 
         return SimulationResult(mutant_name, True, passed, sim_output=output[:3000])
 
+    def compile_only(self, testbench_path: str, mutant_path: str,
+                     work_dir: str = None) -> tuple[bool, str]:
+        """
+        Compile a testbench with one mutant and return (compiled_ok, error_text).
+        Useful for early syntax/compatibility screening before full-batch simulation.
+        """
+        result = self.compile_and_run(testbench_path, mutant_path, work_dir)
+        if result.compiled:
+            return True, ""
+        return False, result.compile_error
+
     def _check_passed(self, output: str) -> bool:
         """
         Determine if simulation passed based on output text.

@@ -1,0 +1,514 @@
+{
+  "module_type": "sequential",
+  "oracle_style": "protocol_invariant",
+  "exhaustive_possible": false,
+  "total_input_bits": 10,
+  "safe_checks": [
+    "After a rising clock edge with rst=1, the FIFO must externally reflect empty state: empty=1, full=0, items=0, slots=13, push_ready=1, pop_valid=0.",
+    "Accepted push is defined only by push_valid && push_ready on the rising clock edge.",
+    "Accepted pop is defined only by pop_valid && pop_ready on the rising clock edge.",
+    "When the FIFO is empty and rst=0, and push_valid=1 with pop_ready=1, the module must assert pop_valid combinationally and drive pop_data=push_data in the same cycle.",
+    "When the FIFO is empty and bypass is not active, pop_valid must be 0.",
+    "When the FIFO stores at least one item, pop_valid must be 1.",
+    "When the FIFO stores at least one item, pop_data must equal the oldest stored item.",
+    "When the FIFO is full at 13 stored items, push_ready must be 0.",
+    "When the FIFO is not full, push_ready must be 1.",
+    "Buffered pushes append data to the tail in FIFO order.",
+    "Buffered pops remove exactly the oldest stored item on the active clock edge.",
+    "After a buffered pop, the next queued item becomes visible on pop_data on the following cycle.",
+    "Stored occupancy must remain within 0..13.",
+    "items must equal stored queue depth in stable states where occupancy is unambiguous.",
+    "slots must equal 13-items in stable states where occupancy is unambiguous.",
+    "full must be 1 iff stored depth is 13 in stable states.",
+    "empty must be 1 iff stored depth is 0 in stable states.",
+    "Simultaneous accepted buffered push and accepted buffered pop must preserve occupancy while maintaining FIFO ordering.",
+    "In empty state with push_valid=1 and pop_ready=0, the item must be stored for later delivery rather than bypassed."
+  ],
+  "unsafe_checks": [
+    "Checking pop_data when pop_valid=0.",
+    "Checking exact values of full_next, empty_next, items_next, or slots_next during reset cycles.",
+    "Checking exact *_next values during empty-bypass cycles unless the intended one-step effect is unambiguous.",
+    "Assuming items/items_next include same-cycle bypass-only traffic.",
+    "Assuming empty/full/items/slots include same-cycle combinational adjustments at every boundary case.",
+    "Requiring exact same-cycle combinational status values during empty-to-nonempty or nonempty-to-empty edges beyond explicitly guaranteed cases.",
+    "Requiring the old head to remain on pop_data after a buffered pop edge.",
+    "Assuming any specific internal pointer movement or memory read/write ordering.",
+    "Checking reset overlap with active push/pop traffic beyond the guaranteed post-edge empty-state outputs.",
+    "Checking exact status arithmetic during simultaneous push/pop at ambiguous boundaries unless observed from clear pre-edge stable occupancy."
+  ],
+  "minimal_safe_oracle": [
+    "Reset-edge check: after asserting rst through a rising edge with push_valid=0 and pop_ready=0, verify empty=1, full=0, items=0, slots=13, push_ready=1, pop_valid=0.",
+    "Empty-bypass check: from known empty state with rst=0, drive push_valid=1, pop_ready=1, vary push_data, and verify same-cycle pop_valid=1 and pop_data=push_data; after the edge, verify FIFO is still empty.",
+    "Empty-store check: from known empty state, drive push_valid=1, pop_ready=0, push_data=D; after the edge verify one-item stable state with empty=0, full=0, items=1, slots=12, pop_valid=1, pop_data=D.",
+    "Buffered-pop timing check: from known one-item buffered state, drive pop_ready=1 and verify the head item is observed on the handshake cycle before the edge; after the edge verify empty state on the following cycle.",
+    "FIFO-ordering check: store multiple distinct bytes without pops, then pop them with pop_ready=1 and verify order matches insertion order.",
+    "Simultaneous buffered push/pop check: from non-empty stable state, perform push_valid=1 and pop_ready=1 and verify pre-edge pop_data is old head, occupancy stays constant across the edge, and newly pushed item appears only after older queued items are drained.",
+    "Full-boundary check: fill to 13 stored items, verify full=1 and push_ready=0 in stable full state, attempt push while full and verify no extra item is accepted and ordering is unchanged."
+  ],
+  "reset_tests": [
+    {
+      "description": "Synchronous reset from idle: hold push_valid=0 and pop_ready=0, assert rst before rising edge, then check reset-visible outputs only after the rising edge.",
+      "cycles": 2,
+      "vectors": [
+        {
+          "precondition": "unknown or non-empty state allowed",
+          "inputs": {
+            "rst": 1,
+            "push_valid": 0,
+            "pop_ready": 0
+          },
+          "check_after_posedge": {
+            "empty": 1,
+            "full": 0,
+            "items": 0,
+            "slots": 13,
+            "push_ready": 1,
+            "pop_valid": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Reset recovery: deassert rst after one reset edge and verify FIFO remains empty until a real push is accepted.",
+      "cycles": 2,
+      "vectors": [
+        {
+          "inputs": {
+            "rst": 0,
+            "push_valid": 0,
+            "pop_ready": 0
+          },
+          "check_same_cycle": {
+            "empty": 1,
+            "full": 0,
+            "push_ready": 1,
+            "pop_valid": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Reset priority over normal operation: with buffered contents present, assert rst=1 on a rising edge while push_valid/pop_ready are idle and verify reset clears occupancy.",
+      "cycles": 1,
+      "vectors": [
+        {
+          "precondition": "FIFO contains at least 2 stored items",
+          "inputs": {
+            "rst": 1,
+            "push_valid": 0,
+            "pop_ready": 0
+          },
+          "check_after_posedge": {
+            "empty": 1,
+            "full": 0,
+            "items": 0,
+            "slots": 13,
+            "push_ready": 1,
+            "pop_valid": 0
+          }
+        }
+      ]
+    }
+  ],
+  "normal_tests": [
+    {
+      "description": "Empty bypass basic operation: direct zero-cycle transfer through empty FIFO.",
+      "vectors": [
+        {
+          "precondition": "known empty state",
+          "inputs": {
+            "rst": 0,
+            "push_valid": 1,
+            "push_data": "0x5A",
+            "pop_ready": 1
+          },
+          "check_same_cycle": {
+            "pop_valid": 1,
+            "pop_data": "0x5A"
+          },
+          "check_after_posedge": {
+            "empty": 1,
+            "items": 0,
+            "slots": 13
+          }
+        },
+        {
+          "precondition": "known empty state",
+          "inputs": {
+            "rst": 0,
+            "push_valid": 1,
+            "push_data": "0xC3",
+            "pop_ready": 1
+          },
+          "check_same_cycle": {
+            "pop_valid": 1,
+            "pop_data": "0xC3"
+          }
+        }
+      ]
+    },
+    {
+      "description": "Store one item when empty and consumer not ready.",
+      "vectors": [
+        {
+          "precondition": "known empty state",
+          "inputs": {
+            "rst": 0,
+            "push_valid": 1,
+            "push_data": "0x11",
+            "pop_ready": 0
+          },
+          "check_same_cycle": {
+            "pop_valid": 0
+          },
+          "check_after_posedge": {
+            "empty": 0,
+            "full": 0,
+            "items": 1,
+            "slots": 12,
+            "pop_valid": 1,
+            "pop_data": "0x11"
+          }
+        }
+      ]
+    },
+    {
+      "description": "Pop one buffered item.",
+      "vectors": [
+        {
+          "precondition": "stable one-item buffered state containing 0x11",
+          "inputs": {
+            "rst": 0,
+            "push_valid": 0,
+            "pop_ready": 1
+          },
+          "check_same_cycle": {
+            "pop_valid": 1,
+            "pop_data": "0x11"
+          },
+          "check_after_posedge": {
+            "empty": 1,
+            "items": 0,
+            "slots": 13,
+            "pop_valid": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Basic FIFO ordering with multiple buffered items.",
+      "vectors": [
+        {
+          "stimulus_sequence": [
+            {
+              "inputs": {
+                "push_valid": 1,
+                "push_data": "0x21",
+                "pop_ready": 0
+              }
+            },
+            {
+              "inputs": {
+                "push_valid": 1,
+                "push_data": "0x43",
+                "pop_ready": 0
+              }
+            },
+            {
+              "inputs": {
+                "push_valid": 1,
+                "push_data": "0x65",
+                "pop_ready": 0
+              }
+            }
+          ],
+          "expected_stable_state": {
+            "items": 3,
+            "slots": 10,
+            "pop_valid": 1,
+            "pop_data": "0x21"
+          }
+        },
+        {
+          "stimulus_sequence": [
+            {
+              "inputs": {
+                "push_valid": 0,
+                "pop_ready": 1
+              },
+              "expect_preedge": {
+                "pop_data": "0x21"
+              }
+            },
+            {
+              "inputs": {
+                "push_valid": 0,
+                "pop_ready": 1
+              },
+              "expect_preedge": {
+                "pop_data": "0x43"
+              }
+            },
+            {
+              "inputs": {
+                "push_valid": 0,
+                "pop_ready": 1
+              },
+              "expect_preedge": {
+                "pop_data": "0x65"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "corner_case_tests": [
+    {
+      "description": "Boundary 0->1 transition with stable status checks.",
+      "vectors": [
+        {
+          "precondition": "known empty state",
+          "inputs": {
+            "push_valid": 1,
+            "push_data": "0xAA",
+            "pop_ready": 0
+          },
+          "check_after_posedge": {
+            "empty": 0,
+            "full": 0,
+            "items": 1,
+            "slots": 12,
+            "empty_next": 0,
+            "full_next": 0,
+            "items_next": 1,
+            "slots_next": 12
+          }
+        }
+      ]
+    },
+    {
+      "description": "Boundary 1->0 transition using one buffered pop.",
+      "vectors": [
+        {
+          "precondition": "stable one-item buffered state",
+          "inputs": {
+            "push_valid": 0,
+            "pop_ready": 1
+          },
+          "check_same_cycle": {
+            "pop_valid": 1
+          },
+          "check_preedge_unambiguous_next": {
+            "empty_next": 1,
+            "items_next": 0
+          },
+          "check_after_posedge": {
+            "empty": 1,
+            "items": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Near-full 12->13 transition and full prediction.",
+      "vectors": [
+        {
+          "precondition": "stable 12-item buffered state",
+          "inputs": {
+            "push_valid": 1,
+            "push_data": "0xE1",
+            "pop_ready": 0
+          },
+          "check_preedge_unambiguous_next": {
+            "full_next": 1,
+            "items_next": 13
+          },
+          "check_after_posedge": {
+            "full": 1,
+            "push_ready": 0,
+            "items": 13,
+            "slots": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Full-state push blocking.",
+      "vectors": [
+        {
+          "precondition": "stable full state containing 13 known bytes",
+          "inputs": {
+            "push_valid": 1,
+            "push_data": "0xFE",
+            "pop_ready": 0
+          },
+          "check_same_cycle": {
+            "push_ready": 0,
+            "full": 1
+          },
+          "check_after_posedge": {
+            "items": 13,
+            "slots": 0
+          }
+        }
+      ]
+    },
+    {
+      "description": "Simultaneous buffered push and pop at occupancy>1 should keep occupancy constant and preserve ordering.",
+      "vectors": [
+        {
+          "precondition": "stable queue [0x10, 0x20, 0x30]",
+          "inputs": {
+            "push_valid": 1,
+            "push_data": "0x40",
+            "pop_ready": 1
+          },
+          "check_same_cycle": {
+            "pop_valid": 1,
+            "pop_data": "0x10"
+          },
+          "check_after_posedge": {
+            "items": 3
+          },
+          "followup_cycle": {
+            "inputs": {
+              "push_valid": 0,
+              "pop_ready": 0
+            },
+            "check_same_cycle": {
+              "pop_valid": 1,
+              "pop_data": "0x20"
+            }
+          },
+          "drain_expectation": [
+            "0x20",
+            "0x30",
+            "0x40"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "Single-entry simultaneous push and pop should return old head on the handshake cycle and leave exactly the new item buffered afterward.",
+      "vectors": [
+        {
+          "precondition": "stable queue [0x55]",
+          "inputs": {
+            "push_valid": 1,
+            "push_data": "0x66",
+            "pop_ready": 1
+          },
+          "check_same_cycle": {
+            "pop_valid": 1,
+            "pop_data": "0x55"
+          },
+          "check_after_posedge": {
+            "items": 1,
+            "empty": 0,
+            "pop_valid": 1,
+            "pop_data": "0x66"
+          }
+        }
+      ]
+    },
+    {
+      "description": "Alternating data patterns and extreme byte values through buffered path.",
+      "vectors": [
+        {
+          "stimulus_sequence": [
+            {
+              "inputs": {
+                "push_valid": 1,
+                "push_data": "0x00",
+                "pop_ready": 0
+              }
+            },
+            {
+              "inputs": {
+                "push_valid": 1,
+                "push_data": "0xFF",
+                "pop_ready": 0
+              }
+            },
+            {
+              "inputs": {
+                "push_valid": 1,
+                "push_data": "0xAA",
+                "pop_ready": 0
+              }
+            },
+            {
+              "inputs": {
+                "push_valid": 1,
+                "push_data": "0x55",
+                "pop_ready": 0
+              }
+            }
+          ],
+          "drain_expectation": [
+            "0x00",
+            "0xFF",
+            "0xAA",
+            "0x55"
+          ]
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "End-to-end state traversal: RESET -> EMPTY -> BYPASS transfer -> EMPTY -> one buffered item -> multi-item buffered -> simultaneous push/pop -> near-full -> full -> drain to empty.",
+      "num_cycles": 30,
+      "expected_trace": [
+        "After reset edge, empty state visible.",
+        "Apply empty-bypass cycle and verify direct transfer with no stored occupancy afterward.",
+        "Apply empty store cycle and verify one-item buffered state.",
+        "Push additional items to reach multi-item state and verify head visibility.",
+        "Perform simultaneous buffered push/pop and verify occupancy unchanged and ordering preserved.",
+        "Fill from stable 12-item state to stable 13-item full state and verify push_ready=0.",
+        "Attempt blocked push while full and verify no acceptance.",
+        "Drain all items and verify ordered outputs and final empty state."
+      ]
+    },
+    {
+      "description": "Pop timing sequence to separate combinational-head bugs from registered-output bugs.",
+      "num_cycles": 8,
+      "expected_trace": [
+        "Load two buffered items A then B.",
+        "Before first pop edge, observe pop_data=A.",
+        "Accept first pop on rising edge.",
+        "On following cycle, observe pop_data=B.",
+        "Accept second pop on next rising edge.",
+        "Following cycle returns to empty with pop_valid=0."
+      ]
+    },
+    {
+      "description": "Status-focused stable-state sequence for safe next-state checks.",
+      "num_cycles": 10,
+      "expected_trace": [
+        "Reset to empty and verify empty/full/items/slots.",
+        "Store one item and idle one cycle; verify items=1, slots=12, empty_next=0, full_next=0, items_next=1, slots_next=12.",
+        "Request pop of that one item and verify pre-edge empty_next=1, items_next=0.",
+        "Build 12-item stable state, then request one push without pop and verify pre-edge full_next=1, items_next=13.",
+        "Idle in full state and verify full=1, push_ready=0."
+      ]
+    }
+  ],
+  "random_tests": {
+    "num_vectors": 200,
+    "description": "Run constrained-random multi-cycle testing with a reference queue model. Bias generation toward occupancy boundaries 0, 1, 12, and 13; include random push_valid, pop_ready, and push_data each cycle; periodically force known states via reset. Strictly check only guaranteed behaviors: reset-visible outputs after reset edges, empty-bypass direct transfer, buffered FIFO ordering, push blocking when full, pop_valid gating on empty/non-empty, and stable-state items/slots/full/empty relations when occupancy is unambiguous. Include targeted random bursts of simultaneous push_valid=1 and pop_ready=1 both in empty and non-empty states to expose bypass and occupancy bugs."
+  },
+  "key_discriminators": [
+    "Empty FIFO with push_valid=1 and pop_ready=1 must produce same-cycle pop_valid=1 and pop_data=push_data; this catches missing or delayed bypass logic.",
+    "Empty FIFO with push_valid=1 and pop_ready=0 must buffer the item and deliver it later; this catches lost-write or false-bypass mutants.",
+    "Buffered pop must show the old head on the handshake cycle, while the next item appears on the following cycle; this separates combinational-head behavior from one-cycle-late or too-early update bugs.",
+    "Simultaneous buffered push and pop must keep occupancy constant and preserve FIFO order; this catches +/-1 occupancy mistakes and pointer update errors.",
+    "Full state must deassert push_ready and reject further pushes; this catches full-flag and acceptance bugs.",
+    "Stable-state checks at occupancies 0, 1, 12, and 13 expose off-by-one errors in items, slots, empty, full, and safe *_next predictions.",
+    "Using distinct byte patterns such as 0x00, 0xFF, 0xAA, 0x55, and ordered tags 0x10/0x20/0x30/0x40 exposes stale-output, wrong-head, and ordering mutants.",
+    "Reset must only be checked after the active clock edge because reset is synchronous; this avoids overspecifying immediate combinational reset behavior.",
+    "Do not check pop_data when pop_valid=0; this prevents false failures from stale or don't-care data.",
+    "Do not make same-cycle empty/full/items/slots behavior during bypass the primary oracle; instead check the guaranteed transfer and post-edge occupancy."
+  ]
+}

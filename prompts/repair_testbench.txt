@@ -1,0 +1,84 @@
+You are repairing a Verilog testbench for Icarus Verilog compatibility and stronger mutant discrimination.
+
+GOALS:
+- Return a COMPLETE Verilog testbench module named `tb`
+- Preserve the original verification intent
+- Fix compile errors reported by `iverilog -g2012`
+- Keep the testbench self-checking and discriminative
+
+RULES:
+- Return only Verilog code
+- Do not include markdown fences
+- Keep `timescale 1ns/1ps`
+- Keep the DUT interface consistent with the provided module header
+- Prefer deterministic directed checks over random-only testing
+- Use `guaranteed_properties` as the source of strict assertions and remove checks derived from `ambiguous_properties` or `forbidden_assumptions`
+- For sequential tests, ensure consecutive helper-task calls do not accidentally allow an extra clock edge between intended checks
+- For synchronous-reset modules, remove any reset check that fires before the active clock edge that applies reset. Keep reset checks only after the qualifying clock edge unless the spec explicitly says asynchronous reset.
+- For synchronous-reset protocol modules, if the bench checks reset outputs while transfer requests are also asserted, weaken those checks to an idle-reset scenario unless the specification explicitly defines reset-overlap behavior.
+- For synchronous-reset protocol modules, remove strict `*_next` checks during reset unless the specification explicitly defines reset-time predictor semantics.
+- For FIFO modules, if the bench checks the popped data value after the accepting clock edge, move that check to the pre-edge handshake cycle and avoid reasserting the old head post-edge unless the specification explicitly guarantees it.
+- For CDC credit-return modules, if the bench keeps an exact pending-credit count or requires one sampled `push_credit` pulse for each completed pop, remove that accounting rule and replace it with weaker checks:
+  - no credit pulse while stalled
+  - credit return becomes observable eventually after completed pops when stall is deasserted
+- For CDC credit-return modules, also remove any assertion that compares total observed credit pulses against total completed pops.
+- If the previous testbench failed all mutants or showed widespread mismatch, simplify the oracle and timing model instead of adding more complex stimulus
+- For FIFO/CDC/protocol modules, remove speculative exact counter values and exact synchronization latency assumptions unless they are explicitly guaranteed by the spec
+- For FIFO/CDC/protocol modules, remove bounded wait-for-convergence loops and replace them with weaker ordering, stability, and safety checks when the latency is not explicitly guaranteed
+- For credit-based modules, if the bench checks exact values of derived availability signals based on ambiguous 1-bit arithmetic, remove those checks and keep only legality/implication checks that are explicitly guaranteed.
+- For ready/valid FIFOs, if the bench assumes a complete empty-state preview truth table or exact cycle-by-cycle occupancy/status equality, weaken it to explicit reset checks, guaranteed bypass checks, and ordering checks on clearly accepted transfers.
+- If a protocol-heavy testbench failed all mutants, first strip it down to the `minimal_safe_oracle` before adding any stronger checks back.
+- For CDC FIFO / credit modules, drop exact checks on `push_slots`, `pop_items`, `credit_count_push`, `credit_available_push`, `items`, `slots`, and `*_next` unless the specification is explicit enough to justify them.
+- Prefer a smaller trustworthy oracle over a larger speculative oracle.
+- If repairing `credit_receiver`, remove exact `credit_available` scoreboards first and keep only direct-path checks, reset/stall legality, and carefully chosen `credit_count` edge checks.
+- If repairing `fifo_flops`, remove exact per-cycle `items/slots/*_next` scoreboards first and keep only reset, guaranteed bypass, ordering, and stability checks.
+- If repairing `fifo_flops`, also remove strict checks on:
+  - `pop_valid` / `pop_data` in the empty + `push_valid=1` + `pop_ready=0` same-cycle case
+  - any exact pre-edge `pop_valid` check in an empty cycle with `push_valid=1` unless bypass is explicitly occurring
+  - exact `empty/full/items/slots` values during the same cycle as an empty-state bypass transfer
+- If repairing `fifo_flops`, reintroduce status checks only in stable states and clearly clocked transitions, such as:
+  - after the synchronous reset edge
+  - after holding exactly one stored item without a pop
+  - `empty_next/items_next` for a one-item pop request
+  - `full_next/items_next` for a 12-item plus push case
+  - stable full with no pop, where `push_ready=0`
+- If repairing `cdc_fifo_flops_push_credit`, remove exact push/pop/credit counter checks first and keep only reset, stall blocking, FIFO ordering, and backpressure-style checks.
+- If repairing `cdc_fifo_flops_push_credit`, keep the testbench organized into these literal section comments, in order:
+  - `PUSH_RESET_IDLE_CHECKS`
+  - `POP_RESET_IDLE_CHECKS`
+  - `PUSH_SENDER_RESET_HANDSHAKE_CHECKS`
+  - `SINGLE_TRANSFER_CHECKS`
+  - `BACKPRESSURE_HOLD_CHECKS`
+  - `FIFO_ORDERING_CHECKS`
+  - `FILL_AND_DRAIN_CHECKS`
+  - `STALL_BLOCKING_CHECKS`
+- For `cdc_fifo_flops_push_credit`, do not reintroduce strict checks on:
+  - `push_receiver_in_reset == exact delayed formula`
+  - `push_receiver_in_reset == expected_push_reset`
+  - `push_receiver_in_reset must assert after N cycles`
+  - any direct pass/fail assertion on `push_receiver_in_reset`
+  - any requirement that data accepted before `push_rst` or `push_sender_in_reset` must still be visible or pop later
+  - exact `pop_valid` / `pop_data` checks during or while effective `pop_rst` behavior is active
+  - `credit_count_push`
+  - `credit_available_push`
+  - `push_slots`
+  - `pop_items`
+  - exact one-pulse-per-pop accounting
+  - any comparison between total observed `push_credit` pulses and total completed pop handshakes
+  - any assertion that `push_credit` must be only one `push_clk` cycle wide
+  - bounded CDC wait loops
+- For `cdc_fifo_flops_push_credit`, prefer:
+  - reset blocking behavior
+  - push_sender reset handshake behavior without exact formula matching
+  - treat `push_rst` and `push_sender_in_reset` as possible queue-invalidation boundaries unless the spec explicitly guarantees retention
+  - resume-of-operation checks after reset clears, rather than sampled equality checks on `push_receiver_in_reset`
+  - single-transfer eventual completion
+  - backpressure hold stability
+  - FIFO ordering
+  - fill/drain end behavior
+  - stall blocking of `push_credit`
+- For `cdc_fifo_flops_push_credit`, rewrite `PUSH_RESET_IDLE_CHECKS` and `PUSH_SENDER_RESET_HANDSHAKE_CHECKS` so recovery is proven with fresh post-reset pushes, not by popping data that was enqueued before the reset phase.
+- For `cdc_fifo_flops_push_credit`, if the bench waits for an item to become visible on the pop side before attempting the pop, remove that short pre-visibility deadline. Instead, assert `pop_ready`, wait conservatively for the completed pop handshake, and validate ordering/data on the handshake itself.
+- If variable part-selects are needed, use indexed part-select syntax such as `[base +: WIDTH]` or `[base -: WIDTH]`
+- Do not use `[msb:lsb]` when `msb` or `lsb` are variables
+- Keep Icarus-compatible Verilog only

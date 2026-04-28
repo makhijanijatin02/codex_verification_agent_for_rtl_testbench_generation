@@ -2,6 +2,12 @@
   "module_name": "shift_right",
   "ports": [
     {
+      "name": "out_valid",
+      "direction": "output",
+      "width": 1,
+      "type": "valid"
+    },
+    {
       "name": "in",
       "direction": "input",
       "width": 50,
@@ -20,12 +26,6 @@
       "type": "data"
     },
     {
-      "name": "out_valid",
-      "direction": "output",
-      "width": 1,
-      "type": "status"
-    },
-    {
       "name": "out",
       "direction": "output",
       "width": 50,
@@ -33,19 +33,39 @@
     }
   ],
   "has_clock": false,
-  "clock_name": null,
+  "clock_name": "",
   "has_reset": false,
-  "reset_name": null,
-  "reset_type": null,
+  "reset_name": "",
+  "reset_type": "none",
   "is_sequential": false,
-  "behavior_summary": "Purely combinational barrel shifter that treats its 50-bit input as 10 contiguous 5-bit symbols, shifts the symbol array toward lower indices by the 3-bit shift amount, fills vacated most-significant symbols with the provided 5-bit fill value, and asserts out_valid whenever the requested shift is in the supported 0\u20134 range.",
+  "behavior_summary": "Purely combinational symbol-wise logical right shifter. The 50-bit input `in` represents 10 ordered 5-bit symbols. For a shift amount S, if 0 <= S <= 4 then `out_valid=1` and the output symbols are computed as follows: for each output symbol position i from 0 to 9, if i+S <= 9 then out[i] = in[i+S], otherwise out[i] = fill. Equivalently, the vector is shifted right by S symbol positions, and the S vacated most-significant symbol slots are filled with the 5-bit `fill` value replicated once per vacated symbol slot. If `shift > 4`, then `out_valid=0` and the `out` bus is explicitly specified as invalid rather than constrained to any particular value.",
   "edge_cases": [
-    "Shift values 0\u20134 inclusive are considered valid and produce a defined result; any shift above 4 forces out_valid low and the output data must be treated as invalid/unspecified.",
-    "When the shift amount would require more than 10 symbols, the specification does not define wraparound; vacated slots are filled with the supplied fill symbol and the remaining symbols that would index beyond the input range are effectively ignored.",
-    "A single fill symbol is replicated across all vacated most-significant positions; there is no per-position fill source."
+    "Shift amount 0 is valid and should produce an unchanged symbol ordering on `out`, with no `fill` symbols inserted.",
+    "Shift amounts 1 through 4 are valid and must shift by whole 5-bit symbols, never by individual bits.",
+    "Shift amount 4 is the maximum valid shift; exactly 4 most-significant output symbol positions are filled with `fill` and the remaining 6 output positions come from input symbols.",
+    "Shift amounts 5, 6, and 7 are invalid because `shift` is 3 bits wide but only values 0 through 4 are declared valid.",
+    "When `shift > 4`, `out_valid` must be 0 and the testbench should treat `out` as don't-care/invalid rather than enforce a specific numeric value.",
+    "The spec defines vacated positions at the most significant symbol end, so symbol ordering matters; a common ambiguity is packed-bit endianness, but externally the required behavior is symbol-position based, not raw bit-slice direction based.",
+    "There is no overflow or underflow in the arithmetic sense; symbols shifted beyond the least-significant end are discarded.",
+    "The same 5-bit `fill` value is copied into every vacated output symbol position, not spread bitwise across the vector."
   ],
   "state_transitions": [],
-  "priorities": [],
+  "priorities": [
+    "No clocked or sequential priority structure exists; behavior is purely combinational.",
+    "Validity rule has precedence for checking: `out_valid` is 1 only for `shift <= 4`; when `out_valid` is 0, `out` must not be strictly checked."
+  ],
+  "mutation_risks": [
+    "Implementing a bitwise right shift instead of a symbol-wise 5-bit-lane shift.",
+    "Reversing the shift direction and effectively performing a left shift.",
+    "Filling vacated positions on the least-significant side instead of the most-significant side.",
+    "Using zero fill or sign-extension instead of the provided 5-bit `fill` symbol.",
+    "Replicating `fill` incorrectly across bits rather than per 5-bit symbol slot.",
+    "Off-by-one mistakes in the source index, such as using `in[i+S-1]` or `in[i+S+1]`.",
+    "Marking `shift=5` as valid, or using the full 0..7 range as valid because `shift` is 3 bits wide.",
+    "Driving `out_valid` with the wrong comparison, such as `< 4` instead of `<= 4`.",
+    "Producing a constrained `out` value during invalid shifts when the spec only guarantees invalidity.",
+    "Misinterpreting the packed 50-bit bus ordering and swapping symbol positions."
+  ],
   "output_behavior": {
     "combinational_outputs": [
       "out_valid",

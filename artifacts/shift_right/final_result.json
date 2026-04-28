@@ -1,19 +1,21 @@
 {
   "problem_name": "shift_right",
-  "best_score": 0.0,
+  "best_score": 1.0,
   "iterations_used": 1,
-  "total_time_seconds": 234.3726990222931,
+  "total_time_seconds": 210.4739441871643,
   "num_mutants": 31,
-  "testbench_path": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/tb/shift_right_tb.v",
-  "artifacts_dir": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/artifacts/shift_right",
+  "testbench_path": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/shift_right_tb.v",
+  "artifacts_dir": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/artifacts/shift_right",
   "score_info": {
-    "score": 0.0,
-    "num_passing": 0,
-    "num_failing": 31,
-    "num_compile_errors": 31,
+    "score": 1.0,
+    "num_passing": 1,
+    "num_failing": 30,
+    "num_compile_errors": 0,
     "num_total": 31,
     "correct_passed": true,
-    "passing_mutants": [],
+    "passing_mutants": [
+      "mutant_9"
+    ],
     "failing_mutants": [
       "mutant_0",
       "mutant_1",
@@ -24,7 +26,6 @@
       "mutant_6",
       "mutant_7",
       "mutant_8",
-      "mutant_9",
       "mutant_10",
       "mutant_11",
       "mutant_12",

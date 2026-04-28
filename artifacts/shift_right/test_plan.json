@@ -4,403 +4,160 @@
   "total_input_bits": 58,
   "reset_tests": [
     {
-      "description": "No reset input exists; after power-up apply a stable vector (e.g., in_symbols=[0,1,...,9], shift=0, fill=0) and confirm out mirrors the input immediately and out_valid is 1 without any reset sequencing.",
-      "cycles": 1
+      "description": "No reset signal exists. Verify the module is purely combinational by applying stable inputs from time 0 and checking that `out_valid` and `out` immediately reflect the current inputs with no reset prerequisite and no retained state from prior stimuli.",
+      "cycles": 0
+    },
+    {
+      "description": "Change from one valid input pattern to a different valid input pattern without any reset-like operation and verify outputs recompute solely from the new `in`, `shift`, and `fill` values.",
+      "cycles": 0
+    },
+    {
+      "description": "Drive an invalid shift (`shift`=5, 6, or 7) and then return to a valid shift, confirming `out_valid` returns to 1 based only on the present inputs and that no stale invalid-state behavior remains.",
+      "cycles": 0
     }
   ],
   "normal_tests": [
     {
-      "description": "Zero shift should behave as a transparent path for valid ranges.",
+      "description": "Identity mapping for `shift=0`. Use distinct 5-bit symbols in all 10 lanes so ordering is observable. Expect `out_valid=1` and `out[i]=in[i]` for every symbol position i.",
       "vectors": [
         {
-          "in_symbols": [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9
-          ],
           "shift": 0,
-          "fill": 3,
-          "expected_out_symbols": [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9
+          "fill": "10101",
+          "in_symbols": [
+            "00000",
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001"
           ],
-          "out_valid": 1
+          "expected_out_valid": 1,
+          "expected_out_symbols": [
+            "00000",
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001"
+          ]
         }
       ]
     },
     {
-      "description": "Single-symbol shift with replicated fill covering the most-significant slot.",
+      "description": "Single-symbol logical right shift for `shift=1`. Expect symbol positions 0..8 to take `in[1]..in[9]` and position 9 to become `fill`.",
       "vectors": [
         {
-          "in_symbols": [
-            31,
-            30,
-            29,
-            28,
-            27,
-            26,
-            25,
-            24,
-            23,
-            22
-          ],
           "shift": 1,
-          "fill": 17,
-          "expected_out_symbols": [
-            17,
-            31,
-            30,
-            29,
-            28,
-            27,
-            26,
-            25,
-            24,
-            23
+          "fill": "11100",
+          "in_symbols": [
+            "00000",
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001"
           ],
-          "out_valid": 1
+          "expected_out_valid": 1,
+          "expected_out_symbols": [
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001",
+            "11100"
+          ]
         }
       ]
     },
     {
-      "description": "Maximum defined shift (4) keeps lowest six symbols and fills four MS symbols.",
+      "description": "Mid-range shift for `shift=2`. Expect exactly two most-significant output symbol positions to be filled with the same 5-bit `fill` symbol and all remaining positions to map from `in[i+2]`.",
       "vectors": [
         {
-          "in_symbols": [
-            5,
-            10,
-            15,
-            20,
-            25,
-            30,
-            0,
-            7,
-            14,
-            21
-          ],
-          "shift": 4,
-          "fill": 1,
-          "expected_out_symbols": [
-            1,
-            1,
-            1,
-            1,
-            5,
-            10,
-            15,
-            20,
-            25,
-            30
-          ],
-          "out_valid": 1
-        }
-      ]
-    }
-  ],
-  "corner_case_tests": [
-    {
-      "description": "Shift=4 with fill=31 (all ones) to ensure fill symbol replicates bit-accurately and no wrap occurs.",
-      "vectors": [
-        {
-          "in_symbols": [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0
-          ],
-          "shift": 4,
-          "fill": 31,
-          "expected_out_symbols": [
-            31,
-            31,
-            31,
-            31,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0
-          ],
-          "out_valid": 1
-        }
-      ]
-    },
-    {
-      "description": "Shift request above supported range should force out_valid low and leave data as don't-care.",
-      "vectors": [
-        {
-          "in_symbols": [
-            9,
-            9,
-            9,
-            9,
-            9,
-            9,
-            9,
-            9,
-            9,
-            9
-          ],
-          "shift": 5,
-          "fill": 12,
-          "expected_out_symbols": "don't care",
-          "out_valid": 0
-        },
-        {
-          "in_symbols": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10
-          ],
-          "shift": 7,
-          "fill": 0,
-          "expected_out_symbols": "don't care",
-          "out_valid": 0
-        }
-      ]
-    },
-    {
-      "description": "Boundary patterns (all zeros/all ones, alternating symbols) with valid shift to catch bit ordering bugs.",
-      "vectors": [
-        {
-          "in_symbols": [
-            0,
-            31,
-            0,
-            31,
-            0,
-            31,
-            0,
-            31,
-            0,
-            31
-          ],
           "shift": 2,
-          "fill": 0,
-          "expected_out_symbols": [
-            0,
-            0,
-            31,
-            0,
-            31,
-            0,
-            31,
-            0,
-            31,
-            0
-          ],
-          "out_valid": 1
-        },
-        {
+          "fill": "01010",
           "in_symbols": [
-            31,
-            0,
-            31,
-            0,
-            31,
-            0,
-            31,
-            0,
-            31,
-            0
+            "10000",
+            "10001",
+            "10010",
+            "10011",
+            "10100",
+            "10101",
+            "10110",
+            "10111",
+            "11000",
+            "11001"
           ],
-          "shift": 3,
-          "fill": 31,
+          "expected_out_valid": 1,
           "expected_out_symbols": [
-            31,
-            31,
-            31,
-            31,
-            31,
-            0,
-            31,
-            0,
-            31,
-            0
-          ],
-          "out_valid": 1
-        }
-      ]
-    }
-  ],
-  "sequence_tests": [
-    {
-      "description": "Back-to-back shift requests without idle time to ensure purely combinational response and no stale state.",
-      "num_cycles": 3,
-      "patterns": [
-        {
-          "cycle": 1,
-          "in_symbols": [
-            4,
-            8,
-            12,
-            16,
-            20,
-            24,
-            28,
-            0,
-            1,
-            2
-          ],
-          "shift": 0,
-          "fill": 5,
-          "expected_out_symbols": [
-            4,
-            8,
-            12,
-            16,
-            20,
-            24,
-            28,
-            0,
-            1,
-            2
-          ],
-          "out_valid": 1
-        },
-        {
-          "cycle": 2,
-          "in_symbols": [
-            4,
-            8,
-            12,
-            16,
-            20,
-            24,
-            28,
-            0,
-            1,
-            2
-          ],
-          "shift": 2,
-          "fill": 7,
-          "expected_out_symbols": [
-            7,
-            7,
-            4,
-            8,
-            12,
-            16,
-            20,
-            24,
-            28,
-            0
-          ],
-          "out_valid": 1
-        },
-        {
-          "cycle": 3,
-          "in_symbols": [
-            4,
-            8,
-            12,
-            16,
-            20,
-            24,
-            28,
-            0,
-            1,
-            2
-          ],
-          "shift": 5,
-          "fill": 0,
-          "expected_out_symbols": "don't care",
-          "out_valid": 0
+            "10010",
+            "10011",
+            "10100",
+            "10101",
+            "10110",
+            "10111",
+            "11000",
+            "11001",
+            "01010",
+            "01010"
+          ]
         }
       ]
     },
     {
-      "description": "Simultaneously toggle shift and fill symbols while changing input to verify priority handling on combinational paths.",
-      "num_cycles": 4,
-      "patterns": [
+      "description": "Maximum valid shift for `shift=4`. Expect positions 0..5 to take `in[4]..in[9]` and positions 6..9 to all equal `fill`.",
+      "vectors": [
         {
-          "cycle": 1,
-          "in_symbols": [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9
-          ],
-          "shift": 1,
-          "fill": 2,
-          "out_valid": 1
-        },
-        {
-          "cycle": 2,
-          "in_symbols": [
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19
-          ],
           "shift": 4,
-          "fill": 30,
-          "out_valid": 1
-        },
-        {
-          "cycle": 3,
+          "fill": "00111",
           "in_symbols": [
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
-            27,
-            28,
-            29
+            "00000",
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001"
           ],
-          "shift": 6,
-          "fill": 31,
-          "out_valid": 0
-        },
+          "expected_out_valid": 1,
+          "expected_out_symbols": [
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001",
+            "00111",
+            "00111",
+            "00111",
+            "00111"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "Exhaustive control-space sweep over `shift=0..7` with one fixed highly distinguishable input pattern and one nontrivial `fill`. For `shift<=4`, check the exact symbol mapping formula. For `shift>4`, check only `out_valid=0` and do not constrain `out`.",
+      "vectors": [
         {
-          "cycle": 4,
-          "in_symbols": [
-            30,
-            31,
+          "shift_values": [
             0,
             1,
             2,
@@ -410,22 +167,416 @@
             6,
             7
           ],
-          "shift": 0,
-          "fill": 5,
-          "out_valid": 1
+          "fill": "10110",
+          "in_symbols": [
+            "00000",
+            "11111",
+            "00001",
+            "11110",
+            "00010",
+            "11101",
+            "00011",
+            "11100",
+            "00100",
+            "11011"
+          ]
         }
       ]
     }
   ],
+  "corner_case_tests": [
+    {
+      "description": "Invalid shift boundary. Check `shift=5`, `6`, and `7` explicitly. These must produce `out_valid=0`; `out` is don't-care and must not be overconstrained.",
+      "vectors": [
+        {
+          "shift": 5,
+          "fill": "00000",
+          "in_symbols": [
+            "00000",
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001"
+          ],
+          "expected_out_valid": 0
+        },
+        {
+          "shift": 6,
+          "fill": "11111",
+          "in_symbols": [
+            "11111",
+            "11110",
+            "11101",
+            "11100",
+            "11011",
+            "11010",
+            "11001",
+            "11000",
+            "10111",
+            "10110"
+          ],
+          "expected_out_valid": 0
+        },
+        {
+          "shift": 7,
+          "fill": "01010",
+          "in_symbols": [
+            "00101",
+            "01010",
+            "10101",
+            "11000",
+            "00011",
+            "11100",
+            "01111",
+            "10000",
+            "00110",
+            "11001"
+          ],
+          "expected_out_valid": 0
+        }
+      ]
+    },
+    {
+      "description": "Boundary fills. Use `fill=00000` and `fill=11111` to catch zero-fill assumptions, sign-extension-like behavior, or partial replication bugs.",
+      "vectors": [
+        {
+          "shift": 3,
+          "fill": "00000",
+          "in_symbols": [
+            "00001",
+            "00010",
+            "00100",
+            "01000",
+            "10000",
+            "00011",
+            "00110",
+            "01100",
+            "11000",
+            "11111"
+          ],
+          "expected_out_valid": 1,
+          "expected_out_symbols": [
+            "01000",
+            "10000",
+            "00011",
+            "00110",
+            "01100",
+            "11000",
+            "11111",
+            "00000",
+            "00000",
+            "00000"
+          ]
+        },
+        {
+          "shift": 3,
+          "fill": "11111",
+          "in_symbols": [
+            "00001",
+            "00010",
+            "00100",
+            "01000",
+            "10000",
+            "00011",
+            "00110",
+            "01100",
+            "11000",
+            "11111"
+          ],
+          "expected_out_valid": 1,
+          "expected_out_symbols": [
+            "01000",
+            "10000",
+            "00011",
+            "00110",
+            "01100",
+            "11000",
+            "11111",
+            "11111",
+            "11111",
+            "11111"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "Per-symbol replication check. Choose a `fill` with mixed bits and a shift inserting multiple vacated lanes. Confirm every vacated 5-bit symbol equals the full `fill` value, not a bitwise smear or truncated pattern.",
+      "vectors": [
+        {
+          "shift": 4,
+          "fill": "10101",
+          "in_symbols": [
+            "11111",
+            "00000",
+            "11011",
+            "00100",
+            "01010",
+            "10100",
+            "01110",
+            "10001",
+            "00111",
+            "11100"
+          ],
+          "expected_out_valid": 1,
+          "expected_out_symbols": [
+            "01010",
+            "10100",
+            "01110",
+            "10001",
+            "00111",
+            "11100",
+            "10101",
+            "10101",
+            "10101",
+            "10101"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "Direction-disambiguation test. Use unique symbols and a nonmatching fill so right-shift, left-shift, and reversed-order implementations all produce different observable outputs.",
+      "vectors": [
+        {
+          "shift": 1,
+          "fill": "10011",
+          "in_symbols": [
+            "00000",
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001"
+          ],
+          "expected_out_valid": 1,
+          "expected_out_symbols": [
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001",
+            "10011"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "Bitwise-vs-symbolwise discrimination. Use adjacent symbols whose concatenation would reveal an erroneous 1-bit or 2-bit shift. Check valid shifts 1 through 4 against exact 5-bit-lane movement only.",
+      "vectors": [
+        {
+          "shift": 1,
+          "fill": "00101",
+          "in_symbols": [
+            "00001",
+            "00010",
+            "00100",
+            "01000",
+            "10000",
+            "11111",
+            "01111",
+            "00111",
+            "00011",
+            "10101"
+          ],
+          "expected_out_valid": 1
+        },
+        {
+          "shift": 2,
+          "fill": "00101",
+          "in_symbols": [
+            "00001",
+            "00010",
+            "00100",
+            "01000",
+            "10000",
+            "11111",
+            "01111",
+            "00111",
+            "00011",
+            "10101"
+          ],
+          "expected_out_valid": 1
+        },
+        {
+          "shift": 3,
+          "fill": "00101",
+          "in_symbols": [
+            "00001",
+            "00010",
+            "00100",
+            "01000",
+            "10000",
+            "11111",
+            "01111",
+            "00111",
+            "00011",
+            "10101"
+          ],
+          "expected_out_valid": 1
+        },
+        {
+          "shift": 4,
+          "fill": "00101",
+          "in_symbols": [
+            "00001",
+            "00010",
+            "00100",
+            "01000",
+            "10000",
+            "11111",
+            "01111",
+            "00111",
+            "00011",
+            "10101"
+          ],
+          "expected_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Off-by-one source-index detection. Use a monotonic symbol ramp so `in[i+S-1]`, `in[i+S]`, and `in[i+S+1]` are easy to separate. Run for several shifts, especially `shift=1` and `shift=4`.",
+      "vectors": [
+        {
+          "shift": 1,
+          "fill": "11110",
+          "in_symbols": [
+            "00000",
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001"
+          ],
+          "expected_out_valid": 1
+        },
+        {
+          "shift": 4,
+          "fill": "11110",
+          "in_symbols": [
+            "00000",
+            "00001",
+            "00010",
+            "00011",
+            "00100",
+            "00101",
+            "00110",
+            "00111",
+            "01000",
+            "01001"
+          ],
+          "expected_out_valid": 1
+        }
+      ]
+    },
+    {
+      "description": "Packed-bus endianness check. Place distinctive symbols only at the first and last positions, with all interior symbols equal, so swapped symbol-order interpretations become obvious.",
+      "vectors": [
+        {
+          "shift": 2,
+          "fill": "01101",
+          "in_symbols": [
+            "00001",
+            "10101",
+            "01010",
+            "01010",
+            "01010",
+            "01010",
+            "01010",
+            "01010",
+            "10110",
+            "11100"
+          ],
+          "expected_out_valid": 1,
+          "expected_out_symbols": [
+            "01010",
+            "01010",
+            "01010",
+            "01010",
+            "01010",
+            "01010",
+            "10110",
+            "11100",
+            "01101",
+            "01101"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "Output validity independence from data. Hold `in` and `fill` constant and vary only `shift`; verify `out_valid` changes only according to `shift<=4` and not according to data patterns.",
+      "vectors": [
+        {
+          "shift_values": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fill": "11010",
+          "in_symbols": [
+            "11111",
+            "00000",
+            "11111",
+            "00000",
+            "11111",
+            "00000",
+            "11111",
+            "00000",
+            "11111",
+            "00000"
+          ]
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "Combinational transition sequence over all legal and illegal shifts using one fixed distinguishable input pattern. Apply `shift` in the order 0,1,2,3,4,5,4,3,2,1,0,7 and verify each step independently from the current inputs only. This catches stale outputs, cached previous values, and wrong validity comparison logic.",
+      "num_cycles": 12
+    },
+    {
+      "description": "Input-change stress sequence with constant `shift=2`. Change only `fill`, then only `in`, then both together; verify `out` immediately follows the formula `out[i]=in[i+2]` for i<=7 and `out[8]=out[9]=fill`. This separates correct combinational recomputation from latent registered-output behavior.",
+      "num_cycles": 6
+    },
+    {
+      "description": "Invalid-to-valid-to-invalid sequence. Apply `shift=6`, then `shift=4`, then `shift=5` while changing `in` and `fill` each step. Check that valid cycles produce exact symbol-mapped outputs and invalid cycles check only `out_valid=0`, preventing accidental dependence on previously constrained `out` values.",
+      "num_cycles": 3
+    }
+  ],
   "random_tests": {
-    "num_vectors": 300,
-    "description": "Generate random 50-bit inputs, random fill symbols, and random 3-bit shifts; expect out_valid=1 for shift<=4 with symbol-aligned barrel shift + replicated fill, else out_valid=0. Include bursts of consecutive vectors to catch combinational glitches."
+    "num_vectors": 200,
+    "description": "Generate 200 random vectors over the full input space: random 50-bit `in`, random 3-bit `shift`, random 5-bit `fill`. For each vector, if `shift<=4`, compute the oracle per 5-bit symbol as `expected_out[i]=in[i+shift]` for source positions still within 0..9 else `fill`, and require `out_valid=1`. If `shift>4`, require only `out_valid=0` and treat `out` as don't-care. Bias at least half of the random vectors toward discriminator-rich patterns such as unique per-symbol ramps, alternating symbols, all-zeros, all-ones, endpoint-unique patterns, and mixed-bit `fill` values."
   },
   "key_discriminators": [
-    "out_valid must be 1 only when shift is 0\u20134; any higher value forces it low regardless of fill or data.",
-    "Vacated most-significant symbols must all take the identical 5-bit fill value; no per-position fill or zeroing.",
-    "No wraparound: symbols shifted beyond index 0 disappear rather than reappear at MS slots.",
-    "Bit slicing happens in 5-bit chunks; off-by-one bit shifts will immediately corrupt boundary tests.",
-    "Combinational behavior only: output must respond to input changes within the same cycle without requiring reset or clocking."
+    "`shift=0` must be a pure identity mapping with `out_valid=1`.",
+    "`shift=4` is valid; `shift=5`, `6`, and `7` are invalid.",
+    "Shifting is by whole 5-bit symbols, not by individual bits.",
+    "The operation is a logical right shift in symbol space, not a left shift.",
+    "Vacated positions are on the most-significant symbol side, not the least-significant side.",
+    "Every vacated symbol slot must equal the full 5-bit `fill` value, replicated per symbol.",
+    "`out_valid` depends only on `shift<=4`; data values must not affect validity.",
+    "When `out_valid=0`, `out` must not be strictly checked, preventing false failures on unconstrained invalid outputs.",
+    "Unique-symbol patterns must be used to detect off-by-one source indexing and packed-bus endianness mistakes.",
+    "Back-to-back input changes must update outputs immediately, distinguishing combinational behavior from stale or registered outputs."
   ]
 }

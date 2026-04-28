@@ -4,132 +4,292 @@
   "total_input_bits": 10,
   "reset_tests": [
     {
-      "description": "At power-up (no explicit reset) drive bin=0 and verify gray=0 immediately, confirming default combinational mapping before any other stimulus.",
-      "cycles": 1
+      "description": "No reset port exists. Verify there is no hidden initialization or stored state by checking that gray is purely a function of the current bin value from time 0 onward.",
+      "cycles": 0,
+      "vectors": [
+        {
+          "bin": "10'b0000000000",
+          "expected_gray": "10'b0000000000",
+          "check": "Immediate combinational response at startup"
+        },
+        {
+          "bin": "10'b1111111111",
+          "expected_gray": "10'b1000000000",
+          "check": "Startup value must not depend on prior history"
+        },
+        {
+          "bin": "10'b1010101010",
+          "expected_gray": "10'b1111111111",
+          "check": "Change input after startup and confirm no state retention"
+        },
+        {
+          "bin": "10'b0000000000",
+          "expected_gray": "10'b0000000000",
+          "check": "Returning to an earlier input must immediately restore the same output"
+        }
+      ]
     }
   ],
   "normal_tests": [
     {
-      "description": "Basic incremental sweep across low values to ensure bin^(bin>>1) relationship; exercise representative points without full enumeration.",
+      "description": "Exhaustive functional test over all 1024 binary input combinations using oracle gray = bin ^ (bin >> 1). This is preferred because the module is small combinational logic with only 10 effective input bits.",
       "vectors": [
         {
-          "bin": "0000000000",
-          "expect_gray": "0000000000"
+          "bin_range": "0 to 1023",
+          "expected_rule": "gray = bin ^ (bin >> 1)",
+          "check": "For every input, gray[9] = bin[9] and gray[i] = bin[i+1] ^ bin[i] for i=0..8"
+        }
+      ]
+    },
+    {
+      "description": "Representative basic vectors that make the formula obvious and exercise typical bit transitions.",
+      "vectors": [
+        {
+          "bin": "10'b0000000001",
+          "expected_gray": "10'b0000000001"
         },
         {
-          "bin": "0000000001",
-          "expect_gray": "0000000001"
+          "bin": "10'b0000000010",
+          "expected_gray": "10'b0000000011"
         },
         {
-          "bin": "0000000010",
-          "expect_gray": "0000000011"
+          "bin": "10'b0000000011",
+          "expected_gray": "10'b0000000010"
         },
         {
-          "bin": "0000000011",
-          "expect_gray": "0000000010"
+          "bin": "10'b0000000100",
+          "expected_gray": "10'b0000000110"
         },
         {
-          "bin": "0000000100",
-          "expect_gray": "0000000110"
+          "bin": "10'b0000000101",
+          "expected_gray": "10'b0000000111"
         },
         {
-          "bin": "0000011111",
-          "expect_gray": "0000010000"
+          "bin": "10'b0010101100",
+          "expected_gray": "10'b0011111010"
+        },
+        {
+          "bin": "10'b1100101001",
+          "expected_gray": "10'b1010111101"
+        }
+      ]
+    },
+    {
+      "description": "Single-hot walking-1 test to verify each output bit depends on the correct adjacent input bits and to catch omitted or constant-tied outputs.",
+      "vectors": [
+        {
+          "bin": "10'b0000000001",
+          "expected_gray": "10'b0000000001"
+        },
+        {
+          "bin": "10'b0000000010",
+          "expected_gray": "10'b0000000011"
+        },
+        {
+          "bin": "10'b0000000100",
+          "expected_gray": "10'b0000000110"
+        },
+        {
+          "bin": "10'b0000001000",
+          "expected_gray": "10'b0000001100"
+        },
+        {
+          "bin": "10'b0000010000",
+          "expected_gray": "10'b0000011000"
+        },
+        {
+          "bin": "10'b0000100000",
+          "expected_gray": "10'b0000110000"
+        },
+        {
+          "bin": "10'b0001000000",
+          "expected_gray": "10'b0001100000"
+        },
+        {
+          "bin": "10'b0010000000",
+          "expected_gray": "10'b0011000000"
+        },
+        {
+          "bin": "10'b0100000000",
+          "expected_gray": "10'b0110000000"
+        },
+        {
+          "bin": "10'b1000000000",
+          "expected_gray": "10'b1100000000"
         }
       ]
     }
   ],
   "corner_case_tests": [
     {
-      "description": "Boundary extremes ensure MSB handling and XOR ripple at edges.",
+      "description": "Boundary values and alternating patterns to catch wrong shift direction, MSB errors, XNOR substitutions, and partial assignments.",
       "vectors": [
         {
-          "bin": "0000000000",
-          "expect_gray": "0000000000"
+          "bin": "10'b0000000000",
+          "expected_gray": "10'b0000000000",
+          "target_bug": "All-zero baseline"
         },
         {
-          "bin": "1111111111",
-          "expect_gray": "1000000000"
+          "bin": "10'b1111111111",
+          "expected_gray": "10'b1000000000",
+          "target_bug": "All-one boundary, MSB copy, lower-bit XOR correctness"
+        },
+        {
+          "bin": "10'b1010101010",
+          "expected_gray": "10'b1111111111",
+          "target_bug": "Alternating pattern exposes XNOR and adjacency mistakes"
+        },
+        {
+          "bin": "10'b0101010101",
+          "expected_gray": "10'b0111111111",
+          "target_bug": "Complementary alternating pattern"
         }
       ]
     },
     {
-      "description": "Alternating-bit patterns stress every XOR pair for independence.",
+      "description": "Directed vectors that distinguish correct right shift from incorrect left shift implementation.",
       "vectors": [
         {
-          "bin": "1010101010",
-          "expect_gray": "1111111111"
+          "bin": "10'b0000000001",
+          "expected_gray": "10'b0000000001",
+          "wrong_left_shift_result": "10'b0000000011"
         },
         {
-          "bin": "0101010101",
-          "expect_gray": "1111111110"
+          "bin": "10'b1000000000",
+          "expected_gray": "10'b1100000000",
+          "wrong_left_shift_result": "10'b1000000000"
+        },
+        {
+          "bin": "10'b0000000010",
+          "expected_gray": "10'b0000000011",
+          "wrong_left_shift_result": "10'b0000000110"
         }
       ]
     },
     {
-      "description": "Single-bit walks detect bit-to-bit crosstalk and ensure each XOR pair only depends on adjacent bits.",
+      "description": "Bit-boundary vectors for off-by-one loop/index errors, especially around gray[0], gray[8], and gray[9].",
       "vectors": [
         {
-          "bin": "1000000000",
-          "expect_gray": "1100000000"
+          "bin": "10'b0000000011",
+          "expected_gray": "10'b0000000010",
+          "target_bug": "gray[0] should use bin[1]^bin[0]"
         },
         {
-          "bin": "0100000000",
-          "expect_gray": "0110000000"
+          "bin": "10'b1100000000",
+          "expected_gray": "10'b1010000000",
+          "target_bug": "gray[8] should use bin[9]^bin[8]"
         },
         {
-          "bin": "0010000000",
-          "expect_gray": "0011000000"
+          "bin": "10'b1000000000",
+          "expected_gray": "10'b1100000000",
+          "target_bug": "gray[9] copied directly, not XORed or forced"
         },
         {
-          "bin": "0001000000",
-          "expect_gray": "0001100000"
+          "bin": "10'b0111111111",
+          "expected_gray": "10'b0100000000",
+          "target_bug": "Upper boundary with MSB=0 and all lower bits=1"
+        }
+      ]
+    },
+    {
+      "description": "Walking-0 patterns on an all-ones background to catch stale constants and wrong neighboring-bit selection.",
+      "vectors": [
+        {
+          "bin": "10'b1111111110",
+          "expected_gray": "10'b1000000001"
         },
         {
-          "bin": "0000100000",
-          "expect_gray": "0000110000"
+          "bin": "10'b1111111101",
+          "expected_gray": "10'b1000000011"
         },
         {
-          "bin": "0000010000",
-          "expect_gray": "0000011000"
+          "bin": "10'b1011111111",
+          "expected_gray": "10'b1110000000"
         },
         {
-          "bin": "0000001000",
-          "expect_gray": "0000001100"
-        },
-        {
-          "bin": "0000000100",
-          "expect_gray": "0000000110"
-        },
-        {
-          "bin": "0000000010",
-          "expect_gray": "0000000011"
-        },
-        {
-          "bin": "0000000001",
-          "expect_gray": "0000000001"
+          "bin": "10'b0111111111",
+          "expected_gray": "10'b0100000000"
         }
       ]
     }
   ],
   "sequence_tests": [
     {
-      "description": "Glitch-hunting transition test: apply successive bin values differing in multiple bits (e.g., 0x155->0x2AA->0x3FF->0x000) and sample gray immediately to confirm purely combinational response without meta-stable lag.",
-      "num_cycles": 4
+      "description": "Combinational responsiveness sequence: apply a changing stream of inputs without any clock and verify gray updates after each change with no one-cycle-late, registered, or latched behavior.",
+      "num_cycles": 0,
+      "vectors": [
+        {
+          "step": 1,
+          "bin": "10'b0000000000",
+          "expected_gray": "10'b0000000000"
+        },
+        {
+          "step": 2,
+          "bin": "10'b0000000001",
+          "expected_gray": "10'b0000000001"
+        },
+        {
+          "step": 3,
+          "bin": "10'b0000000011",
+          "expected_gray": "10'b0000000010"
+        },
+        {
+          "step": 4,
+          "bin": "10'b0000000010",
+          "expected_gray": "10'b0000000011"
+        },
+        {
+          "step": 5,
+          "bin": "10'b1000000000",
+          "expected_gray": "10'b1100000000"
+        },
+        {
+          "step": 6,
+          "bin": "10'b0000000000",
+          "expected_gray": "10'b0000000000"
+        }
+      ]
     },
     {
-      "description": "Walking Gray verification: iterate bin from 0 to 1023 sequentially (can be accelerated via for-loop) and compare gray trajectory to expected Gray code; ensures no history dependence or stale outputs.",
-      "num_cycles": 1024
+      "description": "Monotonic count sequence over consecutive binary values to verify Gray-code adjacency behavior: consecutive inputs should produce outputs consistent with gray = bin ^ (bin >> 1), and for true Gray encoding adjacent numeric inputs differ by exactly one output bit.",
+      "num_cycles": 16,
+      "vectors": [
+        {
+          "bin_sequence": [
+            "10'b0000000000",
+            "10'b0000000001",
+            "10'b0000000010",
+            "10'b0000000011",
+            "10'b0000000100",
+            "10'b0000000101",
+            "10'b0000000110",
+            "10'b0000000111",
+            "10'b0000001000",
+            "10'b0000001001",
+            "10'b0000001010",
+            "10'b0000001011",
+            "10'b0000001100",
+            "10'b0000001101",
+            "10'b0000001110",
+            "10'b0000001111"
+          ],
+          "expected_rule": "For each sample, gray = bin ^ (bin >> 1); between successive samples, Hamming distance(gray[n], gray[n+1]) = 1"
+        }
+      ]
     }
   ],
   "random_tests": {
     "num_vectors": 200,
-    "description": "Random 10-bit bin values with on-the-fly computation of bin^(bin>>1); capture mismatches to catch mutants with localized bit mistakes."
+    "description": "Apply 200 random 10-bit bin values and compute expected_gray with the independent oracle gray = bin ^ (bin >> 1). Include some back-to-back random changes and repeated values to catch hidden state, latching, stale outputs, and accidental clocked behavior."
   },
   "key_discriminators": [
-    "Every gray[i] must equal bin[i+1]^bin[i]; any mutant miswiring (e.g., using OR or wrong neighbor) is exposed by alternating-bit and single-bit-walk vectors.",
-    "MSB gray[9] must mirror bin[9]; tests that toggle only bin[9] will isolate mutants that continue XORing with nonexistent bits.",
-    "Sequence transitions confirm outputs update combinationally without clock/latched behavior; any sequential mutant exhibiting holdover will fail during rapid value sweeps.",
-    "Exhaustive sweep (feasible for 10 bits) ensures no mutant survives due to untested bin combinations."
+    "Exhaustively enumerate all 1024 possible 10-bit inputs; this alone should strongly separate the correct implementation from wiring, index, width, and XNOR mutants.",
+    "gray[9] must always equal bin[9]; testing bin values with MSB=1 and MSB=0 isolates incorrect MSB handling.",
+    "Each lower bit must satisfy gray[i] = bin[i+1] ^ bin[i]; walking-1 and walking-0 patterns expose wrong adjacent-bit selection and off-by-one indexing.",
+    "Use vectors such as bin=10'b0000000001 and bin=10'b1000000000 to distinguish the correct right-shift formula from an incorrect left-shift implementation.",
+    "Alternating patterns 10'b1010101010 and 10'b0101010101 are highly discriminative for XOR vs XNOR and for omitted/tied output bits.",
+    "Back-to-back input changes without any clock must immediately change gray; this separates correct combinational logic from registered or latched implementations.",
+    "Repeatedly revisiting the same input after other values should always reproduce the same gray output, ruling out stale state or history dependence.",
+    "Consecutive binary counts should produce Gray outputs matching the formula, and adjacent counts should differ by exactly one output bit, which catches subtle bit-slice and formula errors."
   ]
 }

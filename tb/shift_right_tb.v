@@ -1,183 +1,362 @@
 `timescale 1ns/1ps
 
 module tb;
-    localparam integer NUM_SYMBOLS = 10;
-    localparam integer SYMBOL_W    = 5;
-    localparam integer TOTAL_W     = NUM_SYMBOLS * SYMBOL_W;
 
-    reg  [TOTAL_W-1:0] in;
-    reg  [2:0]         shift;
-    reg  [SYMBOL_W-1:0] fill;
-    wire               out_valid;
-    wire [TOTAL_W-1:0] out;
+  reg  [49:0] in;
+  reg  [2:0]  shift;
+  reg  [4:0]  fill;
+  wire        out_valid;
+  wire [49:0] out;
 
-    integer errors = 0;
-    integer test_num = 0;
+  integer errors;
+  integer test_id;
+  integer i;
+  integer j;
+  integer mode;
+  integer base;
+  reg [49:0] tmp_in;
+  reg [49:0] rand_in;
+  reg [2:0]  rand_shift;
+  reg [4:0]  rand_fill;
+  reg [4:0]  symtmp;
 
-    shift_right dut (
-        .out_valid(out_valid),
-        .in(in),
-        .shift(shift),
-        .fill(fill),
-        .out(out)
-    );
+  shift_right dut (
+    .out_valid(out_valid),
+    .in(in),
+    .shift(shift),
+    .fill(fill),
+    .out(out)
+  );
 
-    function [TOTAL_W-1:0] pack_syms;
-        input integer ms9;
-        input integer ms8;
-        input integer ms7;
-        input integer ms6;
-        input integer ms5;
-        input integer ms4;
-        input integer ms3;
-        input integer ms2;
-        input integer ms1;
-        input integer ls0;
+  function [49:0] pack10;
+    input [4:0] s0;
+    input [4:0] s1;
+    input [4:0] s2;
+    input [4:0] s3;
+    input [4:0] s4;
+    input [4:0] s5;
+    input [4:0] s6;
+    input [4:0] s7;
+    input [4:0] s8;
+    input [4:0] s9;
     begin
-        pack_syms = {
-            ms9[SYMBOL_W-1:0],
-            ms8[SYMBOL_W-1:0],
-            ms7[SYMBOL_W-1:0],
-            ms6[SYMBOL_W-1:0],
-            ms5[SYMBOL_W-1:0],
-            ms4[SYMBOL_W-1:0],
-            ms3[SYMBOL_W-1:0],
-            ms2[SYMBOL_W-1:0],
-            ms1[SYMBOL_W-1:0],
-            ls0[SYMBOL_W-1:0]
-        };
+      pack10 = {s9, s8, s7, s6, s5, s4, s3, s2, s1, s0};
     end
-    endfunction
+  endfunction
 
-    function [SYMBOL_W-1:0] get_symbol;
-        input [TOTAL_W-1:0] vec;
-        input integer idx; // 0 = most-significant symbol
-        integer msb;
-        integer lsb;
+  function [49:0] expected_out_fn;
+    input [49:0] vin;
+    input [2:0]  vshift;
+    input [4:0]  vfill;
+    integer k;
+    reg [49:0] tmp;
     begin
-        msb = TOTAL_W-1 - idx*SYMBOL_W;
-        lsb = msb - (SYMBOL_W-1);
-        get_symbol = vec[msb:lsb];
-    end
-    endfunction
-
-    function [TOTAL_W-1:0] put_symbol;
-        input [TOTAL_W-1:0] vec;
-        input integer idx;
-        input [SYMBOL_W-1:0] sym;
-        integer msb;
-        integer lsb;
-        reg [TOTAL_W-1:0] temp;
-    begin
-        temp = vec;
-        msb = TOTAL_W-1 - idx*SYMBOL_W;
-        lsb = msb - (SYMBOL_W-1);
-        temp[msb:lsb] = sym;
-        put_symbol = temp;
-    end
-    endfunction
-
-    function [TOTAL_W-1:0] model_shift;
-        input [TOTAL_W-1:0] in_vec;
-        input [2:0] shift_val;
-        input [SYMBOL_W-1:0] fill_val;
-        integer idx;
-        integer shift_int;
-        reg [TOTAL_W-1:0] result;
-    begin
-        result = {TOTAL_W{1'b0}};
-        shift_int = shift_val;
-        if (shift_int <= 4) begin
-            for (idx = 0; idx < NUM_SYMBOLS; idx = idx + 1) begin
-                if (idx < shift_int)
-                    result = put_symbol(result, idx, fill_val);
-                else
-                    result = put_symbol(result, idx, get_symbol(in_vec, idx - shift_int));
-            end
-        end else begin
-            result = {TOTAL_W{1'bx}};
-        end
-        model_shift = result;
-    end
-    endfunction
-
-    task run_scenario;
-        input [TOTAL_W-1:0] in_vec;
-        input [2:0] shift_val;
-        input [SYMBOL_W-1:0] fill_val;
-        input integer expect_valid;
-        input integer compare_data;
-        input [TOTAL_W-1:0] expected_vec;
-        input [8*64-1:0] label;
-        reg expected_valid_bit;
-    begin
-        in = in_vec;
-        shift = shift_val;
-        fill = fill_val;
-        #1;
-        test_num = test_num + 1;
-        expected_valid_bit = (expect_valid != 0) ? 1'b1 : 1'b0;
-
-        if (out_valid !== expected_valid_bit) begin
-            $display("FAIL: %0s (Test %0d) - out_valid expected %0b, got %0b", label, test_num, expected_valid_bit, out_valid);
-            errors = errors + 1;
-        end
-        if ((compare_data != 0) && (out !== expected_vec)) begin
-            $display("FAIL: %0s (Test %0d) - data expected %050b, got %050b", label, test_num, expected_vec, out);
-            errors = errors + 1;
-        end
-    end
-    endtask
-
-    integer idx;
-    integer sym_idx;
-    reg [TOTAL_W-1:0] rand_in;
-    reg [TOTAL_W-1:0] rand_expected;
-    reg [SYMBOL_W-1:0] rand_fill;
-    reg [2:0] rand_shift;
-    reg [SYMBOL_W-1:0] rand_sym;
-
-    initial begin
-        in = {TOTAL_W{1'b0}};
-        shift = 3'd0;
-        fill = {SYMBOL_W{1'b0}};
-
-        run_scenario(pack_syms(0,1,2,3,4,5,6,7,8,9), 3'd0, 5'd0, 1, 1, pack_syms(0,1,2,3,4,5,6,7,8,9), "Power-up mirror");
-        run_scenario(pack_syms(0,1,2,3,4,5,6,7,8,9), 3'd0, 5'd3, 1, 1, pack_syms(0,1,2,3,4,5,6,7,8,9), "Zero shift baseline");
-        run_scenario(pack_syms(31,30,29,28,27,26,25,24,23,22), 3'd1, 5'd17, 1, 1, pack_syms(17,31,30,29,28,27,26,25,24,23), "Single-symbol shift fill");
-        run_scenario(pack_syms(5,10,15,20,25,30,0,7,14,21), 3'd4, 5'd1, 1, 1, pack_syms(1,1,1,1,5,10,15,20,25,30), "Max shift in range");
-        run_scenario(pack_syms(0,0,0,0,0,0,0,0,0,0), 3'd4, 5'd31, 1, 1, pack_syms(31,31,31,31,0,0,0,0,0,0), "Fill replication");
-        run_scenario(pack_syms(0,31,0,31,0,31,0,31,0,31), 3'd2, 5'd0, 1, 1, pack_syms(0,0,31,0,31,0,31,0,31,0), "Alternating pattern shift2");
-        run_scenario(pack_syms(31,0,31,0,31,0,31,0,31,0), 3'd3, 5'd31, 1, 1, pack_syms(31,31,31,31,31,0,31,0,31,0), "Alternating pattern shift3");
-        run_scenario(pack_syms(9,9,9,9,9,9,9,9,9,9), 3'd5, 5'd12, 0, 0, {TOTAL_W{1'bx}}, "Invalid shift=5 suppress valid");
-        run_scenario(pack_syms(1,2,3,4,5,6,7,8,9,10), 3'd7, 5'd0, 0, 0, {TOTAL_W{1'bx}}, "Invalid shift=7 suppress valid");
-
-        run_scenario(pack_syms(4,8,12,16,20,24,28,0,1,2), 3'd0, 5'd5, 1, 1, pack_syms(4,8,12,16,20,24,28,0,1,2), "Seq burst cycle1");
-        run_scenario(pack_syms(4,8,12,16,20,24,28,0,1,2), 3'd2, 5'd7, 1, 1, pack_syms(7,7,4,8,12,16,20,24,28,0), "Seq burst cycle2");
-        run_scenario(pack_syms(4,8,12,16,20,24,28,0,1,2), 3'd5, 5'd0, 0, 0, {TOTAL_W{1'bx}}, "Seq burst invalid shift");
-
-        run_scenario(pack_syms(0,1,2,3,4,5,6,7,8,9), 3'd1, 5'd2, 1, 1, model_shift(pack_syms(0,1,2,3,4,5,6,7,8,9), 3'd1, 5'd2), "Toggle seq 1");
-        run_scenario(pack_syms(10,11,12,13,14,15,16,17,18,19), 3'd4, 5'd30, 1, 1, model_shift(pack_syms(10,11,12,13,14,15,16,17,18,19), 3'd4, 5'd30), "Toggle seq 2");
-        run_scenario(pack_syms(20,21,22,23,24,25,26,27,28,29), 3'd6, 5'd31, 0, 0, {TOTAL_W{1'bx}}, "Toggle seq invalid");
-        run_scenario(pack_syms(30,31,0,1,2,3,4,5,6,7), 3'd0, 5'd5, 1, 1, model_shift(pack_syms(30,31,0,1,2,3,4,5,6,7), 3'd0, 5'd5), "Toggle seq 4");
-
-        for (idx = 0; idx < 300; idx = idx + 1) begin
-            rand_in = {TOTAL_W{1'b0}};
-            for (sym_idx = 0; sym_idx < NUM_SYMBOLS; sym_idx = sym_idx + 1) begin
-                rand_sym = $random;
-                rand_in = put_symbol(rand_in, sym_idx, rand_sym);
-            end
-            rand_fill = $random;
-            rand_shift = $random;
-            rand_shift = rand_shift & 3'b111;
-            rand_expected = model_shift(rand_in, rand_shift, rand_fill);
-            run_scenario(rand_in, rand_shift, rand_fill, (rand_shift <= 3'd4), (rand_shift <= 3'd4), rand_expected, "Random sweep");
-        end
-
-        if (errors == 0)
-            $display("PASS");
+      tmp = 50'b0;
+      for (k = 0; k < 10; k = k + 1) begin
+        if ((k + vshift) <= 9)
+          tmp[k*5 +: 5] = vin[(k + vshift)*5 +: 5];
         else
-            $display("FAIL: %0d errors", errors);
-        $finish;
+          tmp[k*5 +: 5] = vfill;
+      end
+      expected_out_fn = tmp;
     end
+  endfunction
+
+  task check_case;
+    input integer id;
+    input [49:0] vin;
+    input [2:0]  vshift;
+    input [4:0]  vfill;
+    reg [49:0] exp_out;
+    reg        exp_valid;
+    begin
+      in    = vin;
+      shift = vshift;
+      fill  = vfill;
+      #1;
+
+      exp_valid = (vshift <= 3'd4);
+      exp_out   = expected_out_fn(vin, vshift, vfill);
+
+      if (out_valid !== exp_valid) begin
+        $display("FAIL case=%0d out_valid mismatch: shift=%0d expected=%0b got=%0b in=%h fill=%h", id, vshift, exp_valid, out_valid, vin, vfill);
+        errors = errors + 1;
+      end
+
+      if (exp_valid) begin
+        if (out !== exp_out) begin
+          $display("FAIL case=%0d out mismatch: shift=%0d expected=%h got=%h in=%h fill=%h", id, vshift, exp_out, out, vin, vfill);
+          errors = errors + 1;
+        end
+      end
+    end
+  endtask
+
+  initial begin
+    errors  = 0;
+    test_id = 0;
+
+    in    = 50'b0;
+    shift = 3'b0;
+    fill  = 5'b0;
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00000, 5'b00001, 5'b00010, 5'b00011, 5'b00100,
+             5'b00101, 5'b00110, 5'b00111, 5'b01000, 5'b01001),
+      3'd0,
+      5'b10101);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00000, 5'b00001, 5'b00010, 5'b00011, 5'b00100,
+             5'b00101, 5'b00110, 5'b00111, 5'b01000, 5'b01001),
+      3'd1,
+      5'b11100);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b10000, 5'b10001, 5'b10010, 5'b10011, 5'b10100,
+             5'b10101, 5'b10110, 5'b10111, 5'b11000, 5'b11001),
+      3'd2,
+      5'b01010);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00001, 5'b00010, 5'b00100, 5'b01000, 5'b10000,
+             5'b00011, 5'b00110, 5'b01100, 5'b11000, 5'b11111),
+      3'd3,
+      5'b00000);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00001, 5'b00010, 5'b00100, 5'b01000, 5'b10000,
+             5'b00011, 5'b00110, 5'b01100, 5'b11000, 5'b11111),
+      3'd3,
+      5'b11111);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b11111, 5'b00000, 5'b11011, 5'b00100, 5'b01010,
+             5'b10100, 5'b01110, 5'b10001, 5'b00111, 5'b11100),
+      3'd4,
+      5'b10101);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00000, 5'b00001, 5'b00010, 5'b00011, 5'b00100,
+             5'b00101, 5'b00110, 5'b00111, 5'b01000, 5'b01001),
+      3'd1,
+      5'b10011);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00001, 5'b00010, 5'b00100, 5'b01000, 5'b10000,
+             5'b11111, 5'b01111, 5'b00111, 5'b00011, 5'b10101),
+      3'd1,
+      5'b00101);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00001, 5'b00010, 5'b00100, 5'b01000, 5'b10000,
+             5'b11111, 5'b01111, 5'b00111, 5'b00011, 5'b10101),
+      3'd2,
+      5'b00101);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00001, 5'b00010, 5'b00100, 5'b01000, 5'b10000,
+             5'b11111, 5'b01111, 5'b00111, 5'b00011, 5'b10101),
+      3'd3,
+      5'b00101);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00001, 5'b00010, 5'b00100, 5'b01000, 5'b10000,
+             5'b11111, 5'b01111, 5'b00111, 5'b00011, 5'b10101),
+      3'd4,
+      5'b00101);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00000, 5'b00001, 5'b00010, 5'b00011, 5'b00100,
+             5'b00101, 5'b00110, 5'b00111, 5'b01000, 5'b01001),
+      3'd5,
+      5'b00000);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b11111, 5'b11110, 5'b11101, 5'b11100, 5'b11011,
+             5'b11010, 5'b11001, 5'b11000, 5'b10111, 5'b10110),
+      3'd6,
+      5'b11111);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00101, 5'b01010, 5'b10101, 5'b11000, 5'b00011,
+             5'b11100, 5'b01111, 5'b10000, 5'b00110, 5'b11001),
+      3'd7,
+      5'b01010);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b11110, 5'b00001, 5'b10101, 5'b01010, 5'b00111,
+             5'b11000, 5'b01100, 5'b10011, 5'b00000, 5'b11111),
+      3'd4,
+      5'b01001);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00110, 5'b11001, 5'b01011, 5'b10100, 5'b01101,
+             5'b10010, 5'b00011, 5'b11100, 5'b00101, 5'b01010),
+      3'd0,
+      5'b11111);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b11111, 5'b00000, 5'b11111, 5'b00000, 5'b11111,
+             5'b00000, 5'b11111, 5'b00000, 5'b11111, 5'b00000),
+      3'd4,
+      5'b00110);
+
+    tmp_in = pack10(5'b00000, 5'b00001, 5'b00010, 5'b00011, 5'b00100,
+                    5'b00101, 5'b00110, 5'b00111, 5'b01000, 5'b01001);
+
+    for (i = 0; i < 12; i = i + 1) begin
+      case (i)
+        0:  rand_shift = 3'd0;
+        1:  rand_shift = 3'd1;
+        2:  rand_shift = 3'd2;
+        3:  rand_shift = 3'd3;
+        4:  rand_shift = 3'd4;
+        5:  rand_shift = 3'd5;
+        6:  rand_shift = 3'd4;
+        7:  rand_shift = 3'd3;
+        8:  rand_shift = 3'd2;
+        9:  rand_shift = 3'd1;
+        10: rand_shift = 3'd0;
+        default: rand_shift = 3'd7;
+      endcase
+      test_id = test_id + 1;
+      check_case(test_id, tmp_in, rand_shift, 5'b10110);
+    end
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00001, 5'b00011, 5'b00101, 5'b00111, 5'b01001,
+             5'b01011, 5'b01101, 5'b01111, 5'b10001, 5'b10011),
+      3'd2,
+      5'b00000);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00001, 5'b00011, 5'b00101, 5'b00111, 5'b01001,
+             5'b01011, 5'b01101, 5'b01111, 5'b10001, 5'b10011),
+      3'd2,
+      5'b11111);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b10011, 5'b10001, 5'b01111, 5'b01101, 5'b01011,
+             5'b01001, 5'b00111, 5'b00101, 5'b00011, 5'b00001),
+      3'd2,
+      5'b11111);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00100, 5'b01000, 5'b01100, 5'b10000, 5'b10100,
+             5'b11000, 5'b11100, 5'b00001, 5'b00101, 5'b01001),
+      3'd2,
+      5'b10101);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b00111, 5'b10100, 5'b11100, 5'b00010, 5'b01010,
+             5'b10001, 5'b01101, 5'b11011, 5'b00100, 5'b11110),
+      3'd6,
+      5'b00101);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b11100, 5'b00011, 5'b01110, 5'b10101, 5'b00110,
+             5'b11000, 5'b01001, 5'b10010, 5'b00101, 5'b01010),
+      3'd4,
+      5'b11001);
+
+    test_id = test_id + 1;
+    check_case(test_id,
+      pack10(5'b01010, 5'b10101, 5'b00110, 5'b11001, 5'b01100,
+             5'b10011, 5'b00001, 5'b11110, 5'b01000, 5'b10111),
+      3'd5,
+      5'b00011);
+
+    for (i = 0; i < 200; i = i + 1) begin
+      tmp_in = 50'b0;
+      mode = i % 6;
+      base = (i * 3) % 32;
+
+      if (i < 100) begin
+        case (mode)
+          0: begin
+            for (j = 0; j < 10; j = j + 1)
+              tmp_in[j*5 +: 5] = (base + j) & 5'h1f;
+          end
+          1: begin
+            for (j = 0; j < 10; j = j + 1)
+              tmp_in[j*5 +: 5] = (j[0] ? 5'h1f : 5'h00);
+          end
+          2: begin
+            tmp_in = 50'h0;
+          end
+          3: begin
+            for (j = 0; j < 10; j = j + 1)
+              tmp_in[j*5 +: 5] = 5'h1f;
+          end
+          4: begin
+            for (j = 0; j < 10; j = j + 1) begin
+              if (j == 0)
+                tmp_in[j*5 +: 5] = 5'h01;
+              else if (j == 9)
+                tmp_in[j*5 +: 5] = 5'h1e;
+              else
+                tmp_in[j*5 +: 5] = (5'h08 + j) & 5'h1f;
+            end
+          end
+          default: begin
+            tmp_in = pack10(5'h01, 5'h02, 5'h04, 5'h08, 5'h10,
+                            5'h1f, 5'h0f, 5'h07, 5'h03, 5'h15);
+          end
+        endcase
+
+        case (i % 8)
+          0: rand_fill = 5'h00;
+          1: rand_fill = 5'h1f;
+          2: rand_fill = 5'h15;
+          3: rand_fill = 5'h0a;
+          4: rand_fill = 5'h12;
+          5: rand_fill = 5'h09;
+          6: rand_fill = 5'h1b;
+          default: rand_fill = 5'h05;
+        endcase
+
+        rand_shift = i % 8;
+      end else begin
+        rand_in    = {$random, $random};
+        tmp_in     = rand_in;
+        rand_fill  = $random;
+        rand_shift = $random;
+      end
+
+      test_id = test_id + 1;
+      check_case(test_id, tmp_in, rand_shift, rand_fill);
+    end
+
+    if (errors == 0)
+      $display("PASS");
+    else
+      $display("FAIL: %0d mismatches", errors);
+
+    $finish;
+  end
+
 endmodule

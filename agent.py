@@ -16,6 +16,7 @@ Environment (set in .env file):
 """
 
 import argparse
+import collections
 import json
 import os
 import sys
@@ -55,7 +56,14 @@ load_dotenv()
 
 from llm_backend import create_backend, get_default_model
 from spec_parser import parse_specification, build_test_plan
-from tb_generator import generate_testbench, extract_module_header, build_failure_feedback
+from tb_generator import (
+    build_failure_feedback,
+    extract_module_header,
+    find_protocol_testbench_issues,
+    generate_testbench,
+    get_testbench_prompt_name,
+    repair_testbench,
+)
 from simulator import Simulator, compute_score
 
 
@@ -171,6 +179,9 @@ def run_agent(problem_dir: str, provider: str = "codex-cli", model: str = None,
     print(f"  Problem: {problem['problem_name']}")
     print(f"  Mutants: {problem['num_mutants']}")
     tb_path, artifacts_dir = prepare_output_paths(problem["problem_name"], output_dir)
+    is_cdc_fifo = problem["problem_name"] == "cdc_fifo_flops_push_credit"
+    effective_max_iterations = max(max_iterations, 3) if is_cdc_fifo else max_iterations
+    timeout_limit_seconds = 1200 if is_cdc_fifo else 420
 
     # Step 2: Initialize LLM backend
     if model is None:
@@ -202,7 +213,7 @@ def run_agent(problem_dir: str, provider: str = "codex-cli", model: str = None,
     write_json(artifacts_dir / "test_plan.json", test_plan)
 
     # Step 5: Iterative generate-simulate-refine loop
-    print(f"\n[5/5] Starting generate-simulate-refine loop (max {max_iterations} iterations)...")
+    print(f"\n[5/5] Starting generate-simulate-refine loop (max {effective_max_iterations} iterations)...")
 
     simulator = Simulator(timeout_seconds=30)
 
@@ -211,14 +222,21 @@ def run_agent(problem_dir: str, provider: str = "codex-cli", model: str = None,
     previous_tb = None
     failure_feedback = None
     latest_score_info = None
+    sample_mutant_path = problem["mutant_files"][0]
+    rescue_attempt_used = False
+    partial_refinement_used = False
 
-    for iteration in range(1, max_iterations + 1):
+    max_attempts = effective_max_iterations + 1
+    for iteration in range(1, max_attempts + 1):
+        if iteration > effective_max_iterations and not rescue_attempt_used:
+            break
         elapsed = time.time() - start_time
-        print(f"\n--- Iteration {iteration}/{max_iterations} (elapsed: {elapsed:.1f}s) ---")
+        display_total = effective_max_iterations + 1 if rescue_attempt_used else effective_max_iterations
+        print(f"\n--- Iteration {iteration}/{display_total} (elapsed: {elapsed:.1f}s) ---")
 
         # Check 5-minute timeout
-        if elapsed > 270:  # 4.5 min safety margin
-            print("  WARNING: Approaching 5-minute timeout. Stopping.")
+        if elapsed > timeout_limit_seconds:
+            print(f"  WARNING: Approaching {timeout_limit_seconds // 60}-minute timeout. Stopping.")
             break
 
         # Generate testbench
@@ -233,9 +251,85 @@ def run_agent(problem_dir: str, provider: str = "codex-cli", model: str = None,
             failure_feedback=failure_feedback
         )
 
+        protocol_guard_attempts = 0
+        max_protocol_guard_attempts = 4 if problem["problem_name"] == "cdc_fifo_flops_push_credit" else 2
+        while True:
+            protocol_issues = find_protocol_testbench_issues(tb_code, parsed_spec, test_plan)
+            if not protocol_issues or protocol_guard_attempts >= max_protocol_guard_attempts:
+                break
+            protocol_guard_attempts += 1
+            print("  Generated testbench hit protocol guardrails; requesting regeneration...")
+            issue_text = "\n".join(f"- {issue}" for issue in protocol_issues)
+            tb_code = repair_testbench(
+                llm_backend,
+                problem["spec_text"],
+                parsed_spec,
+                test_plan,
+                module_header,
+                tb_code,
+                "Protocol-safety guardrail failure:\n"
+                "The generated testbench relied on unsafe FIFO/CDC assumptions.\n"
+                f"{issue_text}\n"
+                "Regenerate a testbench that avoids bounded convergence waits, exact status-counter checks, "
+                "exact credit-availability truth-table reconstruction, exact per-cycle FIFO status equality, "
+                "and exact credit-pulse totals unless the specification explicitly guarantees them.",
+            )
+
+        protocol_issues = find_protocol_testbench_issues(tb_code, parsed_spec, test_plan)
+        if protocol_issues:
+            print("  Protocol guardrails still found risky checks after regeneration; proceeding with the least-bad attempt.")
+
         # Save testbench
         tb_path.write_text(tb_code)
         print(f"  Saved testbench to {tb_path} ({len(tb_code)} chars)")
+
+        # Early compile screen against one mutant so we can repair syntax/tool
+        # compatibility before spending a full iteration on all mutants.
+        compiled_ok, compile_error = simulator.compile_only(str(tb_path), sample_mutant_path)
+        if not compiled_ok:
+            print("  Initial compile check failed; attempting focused repair...")
+            tb_code = repair_testbench(
+                llm_backend,
+                problem["spec_text"],
+                parsed_spec,
+                test_plan,
+                module_header,
+                tb_code,
+                compile_error,
+            )
+            protocol_guard_attempts = 0
+            while True:
+                protocol_issues = find_protocol_testbench_issues(tb_code, parsed_spec, test_plan)
+                if not protocol_issues or protocol_guard_attempts >= max_protocol_guard_attempts:
+                    break
+                protocol_guard_attempts += 1
+                issue_text = "\n".join(f"- {issue}" for issue in protocol_issues)
+                tb_code = repair_testbench(
+                    llm_backend,
+                    problem["spec_text"],
+                    parsed_spec,
+                    test_plan,
+                    module_header,
+                    tb_code,
+                    "Protocol-safety guardrail failure after compile repair:\n"
+                    f"{issue_text}\n"
+                    "Regenerate a simpler, safer protocol testbench that uses only guaranteed interface properties.",
+                )
+            tb_path.write_text(tb_code)
+            compiled_ok, compile_error = simulator.compile_only(str(tb_path), sample_mutant_path)
+            if not compiled_ok:
+                print("  Compile repair still failed; deferring to next iteration.")
+                previous_tb = tb_code
+                failure_feedback = (
+                    "The testbench failed to compile under iverilog -g2012.\n\n"
+                    f"Compiler error:\n{compile_error[:2000]}"
+                )
+                write_json(artifacts_dir / f"iteration_{iteration}_compile_failure.json", {
+                    "iteration": iteration,
+                    "compile_error": compile_error,
+                    "testbench_path": str(tb_path),
+                })
+                continue
 
         # Run simulation against all mutants
         print(f"  Running simulations against {problem['num_mutants']} mutants...")
@@ -282,9 +376,34 @@ def run_agent(problem_dir: str, provider: str = "codex-cli", model: str = None,
             print(f"  PERFECT SCORE! Only 1 mutant passes. Stopping.")
             break
 
+        if (
+            score_info["num_passing"] == 0
+            and score_info["num_compile_errors"] == 0
+            and not rescue_attempt_used
+        ):
+            print("  No mutants passed. Triggering one immediate refinement attempt.")
+            rescue_attempt_used = True
+            previous_tb = tb_code
+            failure_feedback = build_failure_feedback(results, iteration, focus_on_dominant_failure=is_cdc_fifo)
+            continue
+
+        if (
+            find_protocol_testbench_issues(tb_code, parsed_spec, test_plan) == []
+            and get_testbench_prompt_name(parsed_spec, test_plan) == "gen_testbench_protocol"
+            and score_info["num_passing"] > 1
+            and score_info["num_passing"] <= 8
+            and not partial_refinement_used
+        ):
+            print("  Partial protocol success detected. Triggering one extra refinement attempt using survivor feedback.")
+            partial_refinement_used = True
+            rescue_attempt_used = True
+            previous_tb = tb_code
+            failure_feedback = build_failure_feedback(results, iteration, focus_on_dominant_failure=is_cdc_fifo)
+            continue
+
         # Prepare feedback for next iteration
         previous_tb = tb_code
-        failure_feedback = build_failure_feedback(results, iteration)
+        failure_feedback = build_failure_feedback(results, iteration, focus_on_dominant_failure=is_cdc_fifo)
 
     # Save best testbench
     if best_tb and best_tb != tb_code:

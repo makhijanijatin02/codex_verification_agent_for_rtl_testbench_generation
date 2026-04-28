@@ -1,0 +1,264 @@
+{
+  "iteration": 1,
+  "score_info": {
+    "score": 0.0,
+    "num_passing": 0,
+    "num_failing": 31,
+    "num_compile_errors": 0,
+    "num_total": 31,
+    "correct_passed": true,
+    "passing_mutants": [],
+    "failing_mutants": [
+      "mutant_0",
+      "mutant_1",
+      "mutant_2",
+      "mutant_3",
+      "mutant_4",
+      "mutant_5",
+      "mutant_6",
+      "mutant_7",
+      "mutant_8",
+      "mutant_9",
+      "mutant_10",
+      "mutant_11",
+      "mutant_12",
+      "mutant_13",
+      "mutant_14",
+      "mutant_15",
+      "mutant_16",
+      "mutant_17",
+      "mutant_18",
+      "mutant_19",
+      "mutant_20",
+      "mutant_21",
+      "mutant_22",
+      "mutant_23",
+      "mutant_24",
+      "mutant_25",
+      "mutant_26",
+      "mutant_27",
+      "mutant_28",
+      "mutant_29",
+      "mutant_30"
+    ]
+  },
+  "simulation_results": [
+    {
+      "mutant_name": "mutant_0",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_1",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_2",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_3",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_4",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_5",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_6",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_7",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_8",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_9",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_10",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_11",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_12",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_13",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_14",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_15",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_16",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_17",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_18",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_19",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_20",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_21",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_22",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_23",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_24",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_25",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_26",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_27",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_28",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_29",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_30",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: observed more push_credit pulses than completed pops at time 86000\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/cdc_fifo_flops_push_credit_tb.v:85: $finish called at 86000 (1ps)\n"
+    }
+  ]
+}

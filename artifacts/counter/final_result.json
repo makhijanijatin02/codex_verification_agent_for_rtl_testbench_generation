@@ -1,0 +1,52 @@
+{
+  "problem_name": "counter",
+  "best_score": 1.0,
+  "iterations_used": 1,
+  "total_time_seconds": 302.5753116607666,
+  "num_mutants": 31,
+  "testbench_path": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/counter_tb.v",
+  "artifacts_dir": "/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/artifacts/counter",
+  "score_info": {
+    "score": 1.0,
+    "num_passing": 1,
+    "num_failing": 30,
+    "num_compile_errors": 0,
+    "num_total": 31,
+    "correct_passed": true,
+    "passing_mutants": [
+      "mutant_11"
+    ],
+    "failing_mutants": [
+      "mutant_0",
+      "mutant_1",
+      "mutant_2",
+      "mutant_3",
+      "mutant_4",
+      "mutant_5",
+      "mutant_6",
+      "mutant_7",
+      "mutant_8",
+      "mutant_9",
+      "mutant_10",
+      "mutant_12",
+      "mutant_13",
+      "mutant_14",
+      "mutant_15",
+      "mutant_16",
+      "mutant_17",
+      "mutant_18",
+      "mutant_19",
+      "mutant_20",
+      "mutant_21",
+      "mutant_22",
+      "mutant_23",
+      "mutant_24",
+      "mutant_25",
+      "mutant_26",
+      "mutant_27",
+      "mutant_28",
+      "mutant_29",
+      "mutant_30"
+    ]
+  }
+}

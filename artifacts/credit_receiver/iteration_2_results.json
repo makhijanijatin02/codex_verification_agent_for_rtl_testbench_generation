@@ -1,0 +1,265 @@
+{
+  "iteration": 2,
+  "score_info": {
+    "score": 1.0,
+    "num_passing": 1,
+    "num_failing": 30,
+    "num_compile_errors": 0,
+    "num_total": 31,
+    "correct_passed": true,
+    "passing_mutants": [
+      "mutant_18"
+    ],
+    "failing_mutants": [
+      "mutant_0",
+      "mutant_1",
+      "mutant_2",
+      "mutant_3",
+      "mutant_4",
+      "mutant_5",
+      "mutant_6",
+      "mutant_7",
+      "mutant_8",
+      "mutant_9",
+      "mutant_10",
+      "mutant_11",
+      "mutant_12",
+      "mutant_13",
+      "mutant_14",
+      "mutant_15",
+      "mutant_16",
+      "mutant_17",
+      "mutant_19",
+      "mutant_20",
+      "mutant_21",
+      "mutant_22",
+      "mutant_23",
+      "mutant_24",
+      "mutant_25",
+      "mutant_26",
+      "mutant_27",
+      "mutant_28",
+      "mutant_29",
+      "mutant_30"
+    ]
+  },
+  "simulation_results": [
+    {
+      "mutant_name": "mutant_0",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAILURES: 3\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_1",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: simultaneous pop_credit and prev push_credit credit_count mismatch at time 196000\nFAILURES: 6\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_2",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: initial idle pop_valid mismatch at time 1000\nFAIL: leave sender reset pop_valid mismatch at time 31000\nFAIL: active data valid 00 pop_valid mismatch at time 32000\nFAIL: pop_valid should follow push_valid low at time 32000\nFAIL: active data valid 5a pop_valid mismatch at time 33000\nFAIL: pop_valid should follow push_valid high at time 33000\nFAIL: active data valid a5 pop_valid mismatch at time 34000\nFAIL: active data valid ff pop_valid mismatch at time 35000\nFAIL: active with credit available pop_valid mismatch at time 71000\nFAIL: stall suppresses push_credit pop_valid mismatch at time 72000\nFAIL: count zero no push_credit pop_valid mismatch at time 91000\nFAIL: no count change before posedge on pop_credit rise pop_valid mismatch at time 101000\nFAIL: no count change before posedge on pop_credit fall pop_valid mismatch at time 111000\nFAIL: increment cycle sample pop_valid mismatch at time 131000\nFAIL: increment from pop_credit only pop_valid mismatch at time 136000\nFAIL: sample cycle with push_credit high pop_valid mismatch at time 151000\nFAIL: current push_credit forced low before decrement edge pop_valid mismatch at time 161000\nFAIL: previous-cycle push_credit must decrement pop_valid mismatch at time 166000\nFAIL: sample prev push_credit for simultaneous inc dec pop_valid mismatch at time 181000\nFAIL: set simultaneous inc dec edge pop_valid mismatch at time 191000\nFAIL: simultaneous pop_credit and prev push_credit pop_valid mismatch at time 196000\nFAIL: final active sanity pop_valid mismatch at time 221000\nFAIL: final active sanity pop_valid at time 221000\nFAILURES: 23\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_3",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst immediate block init0 pop_valid mismatch at time 2000\nFAIL: rst reload init0 pop_valid mismatch at time 6000\nFAIL: rst reload init0 credit_count mismatch at time 6000\nFAIL: rst immediate block init1 pop_valid mismatch at time 11000\nFAIL: rst immediate block init1 push_credit must be low in reset state at time 11000\nFAIL: rst reload init1 pop_valid mismatch at time 16000\nFAIL: rst reload init1 push_credit must be low in reset state at time 16000\nFAIL: rst reload init1 credit_count mismatch at time 16000\nFAIL: active data valid 5a pop_valid mismatch at time 33000\nFAIL: pop_valid should follow push_valid high at time 33000\nFAIL: active data valid a5 pop_valid mismatch at time 34000\nFAIL: active data valid ff pop_valid mismatch at time 35000\nFAIL: data path still passes during rst pop_valid mismatch at time 41000\nFAIL: prepare push_credit priority reset pop_valid mismatch at time 61000\nFAIL: reload count for push_credit priority pop_valid mismatch at time 66000\nFAIL: reload count for push_credit priority credit_count mismatch at time 66000\nFAIL: active with credit available pop_valid mismatch at time 71000\nFAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: stall suppresses push_credit pop_valid mismatch at time 72000\nFAIL: prepare count zero pop_valid mismatch at time 81000\nFAIL: reload count zero pop_valid mismatch at time 86000\nFAIL: reload count zero credit_count mismatch at time 86000\nFAIL: count zero no push_credit pop_valid mismatch at time 91000\nFAIL: no count change before posedge on pop_credit rise pop_valid mismatch at time 101000\nFAIL: no count change before posedge on pop_credit fall pop_valid mismatch at time 111000\nFAIL: prep increment from zero pop_valid mismatch at time 121000\nFAIL: reload zero before increment pop_valid mismatch at time 126000\nFAIL: increment cycle sample pop_valid mismatch at time 131000\nFAIL: increment from pop_credit only pop_valid mismatch at time 136000\nFAIL: increment from pop_credit only credit_count mismatch at time 136000\nFAIL: prep previous-cycle decrement pop_valid mismatch at time 141000\nFAIL: reload one before decrement pop_valid mismatch at time 146000\nFAIL: reload one before decrement credit_count mismatch at time 146000\nFAIL: sample cycle with push_credit high pop_valid mismatch at time 151000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: current push_credit forced low before decrement edge pop_valid mismatch at time 161000\nFAIL: previous-cycle push_credit must decrement pop_valid mismatch at time 166000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: prep simultaneous inc dec pop_valid mismatch at time 171000\nFAIL: prep simultaneous inc dec push_credit must be low in reset state at time 171000\nFAIL: reload one before simultaneous inc dec pop_valid mismatch at time 176000\nFAIL: reload one before simultaneous inc dec credit_count mismatch at time 176000\nFAIL: sample prev "
+    },
+    {
+      "mutant_name": "mutant_4",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init0 credit_count mismatch at time 6000\nFAIL: rst reload init1 credit_count mismatch at time 16000\nFAIL: sender reset reload init0 credit_count mismatch at time 26000\nFAIL: reload count for push_credit priority credit_count mismatch at time 66000\nFAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: reload zero before increment credit_count mismatch at time 126000\nFAIL: increment from pop_credit only credit_count mismatch at time 136000\nFAIL: reload one before decrement credit_count mismatch at time 146000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: reload one before simultaneous inc dec credit_count mismatch at time 176000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: simultaneous pop_credit and prev push_credit credit_count mismatch at time 196000\nFAILURES: 13\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_5",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: initial idle pop_data mismatch at time 1000\nFAIL: rst immediate block init0 pop_data mismatch at time 2000\nFAIL: rst reload init0 pop_data mismatch at time 6000\nFAIL: rst immediate block init1 pop_data mismatch at time 11000\nFAIL: rst reload init1 pop_data mismatch at time 16000\nFAIL: sender reset immediate block pop_data mismatch at time 21000\nFAIL: sender reset reload init0 pop_data mismatch at time 26000\nFAIL: leave sender reset pop_data mismatch at time 31000\nFAIL: active data valid 00 pop_data mismatch at time 32000\nFAIL: active data valid 5a pop_data mismatch at time 33000\nFAIL: active data valid a5 pop_data mismatch at time 34000\nFAIL: active data valid ff pop_data mismatch at time 35000\nFAIL: data path still passes during rst pop_data mismatch at time 41000\nFAIL: pop_data must pass through during rst at time 41000\nFAIL: data path still passes during sender reset pop_data mismatch at time 51000\nFAIL: pop_data must pass through during sender reset at time 51000\nFAIL: prepare push_credit priority reset pop_data mismatch at time 61000\nFAIL: reload count for push_credit priority pop_data mismatch at time 66000\nFAIL: active with credit available pop_data mismatch at time 71000\nFAIL: stall suppresses push_credit pop_data mismatch at time 72000\nFAIL: prepare count zero pop_data mismatch at time 81000\nFAIL: reload count zero pop_data mismatch at time 86000\nFAIL: count zero no push_credit pop_data mismatch at time 91000\nFAIL: no count change before posedge on pop_credit rise pop_data mismatch at time 101000\nFAIL: no count change before posedge on pop_credit fall pop_data mismatch at time 111000\nFAIL: prep increment from zero pop_data mismatch at time 121000\nFAIL: reload zero before increment pop_data mismatch at time 126000\nFAIL: increment cycle sample pop_data mismatch at time 131000\nFAIL: increment from pop_credit only pop_data mismatch at time 136000\nFAIL: prep previous-cycle decrement pop_data mismatch at time 141000\nFAIL: reload one before decrement pop_data mismatch at time 146000\nFAIL: sample cycle with push_credit high pop_data mismatch at time 151000\nFAIL: current push_credit forced low before decrement edge pop_data mismatch at time 161000\nFAIL: previous-cycle push_credit must decrement pop_data mismatch at time 166000\nFAIL: prep simultaneous inc dec pop_data mismatch at time 171000\nFAIL: reload one before simultaneous inc dec pop_data mismatch at time 176000\nFAIL: sample prev push_credit for simultaneous inc dec pop_data mismatch at time 181000\nFAIL: set simultaneous inc dec edge pop_data mismatch at time 191000\nFAIL: simultaneous pop_credit and prev push_credit pop_data mismatch at time 196000\nFAIL: reset priority over update with rst pop_data mismatch at time 201000\nFAIL: rst priority reload pop_data mismatch at time 206000\nFAIL: reset priority over update with sender reset pop_data mismatch at time 211000\nFAIL: sender reset priority reload pop_data mismatch at time 216000\nFAIL: final active sanity pop_data mismatch at time 22100"
+    },
+    {
+      "mutant_name": "mutant_6",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: initial idle pop_valid mismatch at time 1000\nFAIL: rst immediate block init0 pop_valid mismatch at time 2000\nFAIL: rst reload init0 pop_valid mismatch at time 6000\nFAIL: rst immediate block init1 pop_valid mismatch at time 11000\nFAIL: rst reload init1 pop_valid mismatch at time 16000\nFAIL: sender reset immediate block pop_valid mismatch at time 21000\nFAIL: sender reset reload init0 pop_valid mismatch at time 26000\nFAIL: leave sender reset pop_valid mismatch at time 31000\nFAIL: active data valid 00 pop_valid mismatch at time 32000\nFAIL: pop_valid should follow push_valid low at time 32000\nFAIL: active data valid 5a pop_valid mismatch at time 33000\nFAIL: pop_valid should follow push_valid high at time 33000\nFAIL: active data valid a5 pop_valid mismatch at time 34000\nFAIL: active data valid ff pop_valid mismatch at time 35000\nFAIL: data path still passes during rst pop_valid mismatch at time 41000\nFAIL: data path still passes during sender reset pop_valid mismatch at time 51000\nFAIL: prepare push_credit priority reset pop_valid mismatch at time 61000\nFAIL: reload count for push_credit priority pop_valid mismatch at time 66000\nFAIL: active with credit available pop_valid mismatch at time 71000\nFAIL: stall suppresses push_credit pop_valid mismatch at time 72000\nFAIL: prepare count zero pop_valid mismatch at time 81000\nFAIL: reload count zero pop_valid mismatch at time 86000\nFAIL: count zero no push_credit pop_valid mismatch at time 91000\nFAIL: no count change before posedge on pop_credit rise pop_valid mismatch at time 101000\nFAIL: no count change before posedge on pop_credit fall pop_valid mismatch at time 111000\nFAIL: prep increment from zero pop_valid mismatch at time 121000\nFAIL: reload zero before increment pop_valid mismatch at time 126000\nFAIL: increment cycle sample pop_valid mismatch at time 131000\nFAIL: increment from pop_credit only pop_valid mismatch at time 136000\nFAIL: prep previous-cycle decrement pop_valid mismatch at time 141000\nFAIL: reload one before decrement pop_valid mismatch at time 146000\nFAIL: sample cycle with push_credit high pop_valid mismatch at time 151000\nFAIL: current push_credit forced low before decrement edge pop_valid mismatch at time 161000\nFAIL: previous-cycle push_credit must decrement pop_valid mismatch at time 166000\nFAIL: prep simultaneous inc dec pop_valid mismatch at time 171000\nFAIL: reload one before simultaneous inc dec pop_valid mismatch at time 176000\nFAIL: sample prev push_credit for simultaneous inc dec pop_valid mismatch at time 181000\nFAIL: set simultaneous inc dec edge pop_valid mismatch at time 191000\nFAIL: simultaneous pop_credit and prev push_credit pop_valid mismatch at time 196000\nFAIL: reset priority over update with rst pop_valid mismatch at time 201000\nFAIL: rst priority reload pop_valid mismatch at time 206000\nFAIL: reset priority over update with sender reset pop_valid mismatch at time 211000\nFAIL: sender reset priority reload pop_valid mismatch at time 216000\nFAIL: final active san"
+    },
+    {
+      "mutant_name": "mutant_7",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: initial idle pop_data mismatch at time 1000\nFAIL: rst immediate block init0 pop_data mismatch at time 2000\nFAIL: rst reload init0 pop_data mismatch at time 6000\nFAIL: leave sender reset pop_data mismatch at time 31000\nFAIL: active data valid 00 pop_data mismatch at time 32000\nFAIL: active data valid 5a pop_data mismatch at time 33000\nFAIL: data path still passes during sender reset pop_data mismatch at time 51000\nFAIL: pop_data must pass through during sender reset at time 51000\nFAIL: prepare push_credit priority reset pop_data mismatch at time 61000\nFAIL: reload count for push_credit priority pop_data mismatch at time 66000\nFAIL: active with credit available pop_data mismatch at time 71000\nFAIL: stall suppresses push_credit pop_data mismatch at time 72000\nFAIL: prepare count zero pop_data mismatch at time 81000\nFAIL: reload count zero pop_data mismatch at time 86000\nFAIL: count zero no push_credit pop_data mismatch at time 91000\nFAIL: no count change before posedge on pop_credit rise pop_data mismatch at time 101000\nFAIL: no count change before posedge on pop_credit fall pop_data mismatch at time 111000\nFAIL: prep increment from zero pop_data mismatch at time 121000\nFAIL: reload zero before increment pop_data mismatch at time 126000\nFAIL: increment cycle sample pop_data mismatch at time 131000\nFAIL: increment from pop_credit only pop_data mismatch at time 136000\nFAIL: prep previous-cycle decrement pop_data mismatch at time 141000\nFAIL: reload one before decrement pop_data mismatch at time 146000\nFAIL: sample cycle with push_credit high pop_data mismatch at time 151000\nFAIL: current push_credit forced low before decrement edge pop_data mismatch at time 161000\nFAIL: previous-cycle push_credit must decrement pop_data mismatch at time 166000\nFAIL: prep simultaneous inc dec pop_data mismatch at time 171000\nFAIL: reload one before simultaneous inc dec pop_data mismatch at time 176000\nFAIL: sample prev push_credit for simultaneous inc dec pop_data mismatch at time 181000\nFAIL: set simultaneous inc dec edge pop_data mismatch at time 191000\nFAIL: simultaneous pop_credit and prev push_credit pop_data mismatch at time 196000\nFAIL: reset priority over update with rst pop_data mismatch at time 201000\nFAIL: rst priority reload pop_data mismatch at time 206000\nFAIL: reset priority over update with sender reset pop_data mismatch at time 211000\nFAIL: sender reset priority reload pop_data mismatch at time 216000\nFAIL: final active sanity pop_data mismatch at time 221000\nFAIL: final active sanity pop_data at time 221000\nFAILURES: 37\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_8",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: simultaneous pop_credit and prev push_credit credit_count mismatch at time 196000\nFAILURES: 6\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_9",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAILURES: 3\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_10",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init0 credit_count mismatch at time 6000\nFAIL: sender reset reload init0 credit_count mismatch at time 26000\nFAIL: reload count zero credit_count mismatch at time 86000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: no posedge yet after pop_credit rise credit_count mismatch at time 101000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: reload zero before increment credit_count mismatch at time 126000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: sender reset priority reload credit_count mismatch at time 216000\nFAILURES: 9\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_11",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init0 credit_count mismatch at time 6000\nFAIL: rst reload init1 credit_count mismatch at time 16000\nFAIL: sender reset reload init0 credit_count mismatch at time 26000\nFAIL: reload count for push_credit priority credit_count mismatch at time 66000\nFAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: reload count zero credit_count mismatch at time 86000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: reload zero before increment credit_count mismatch at time 126000\nFAIL: increment from pop_credit only credit_count mismatch at time 136000\nFAIL: reload one before decrement credit_count mismatch at time 146000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: reload one before simultaneous inc dec credit_count mismatch at time 176000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: rst priority reload credit_count mismatch at time 206000\nFAIL: sender reset priority reload credit_count mismatch at time 216000\nFAILURES: 15\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_12",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init0 credit_count mismatch at time 6000\nFAIL: sender reset reload init0 credit_count mismatch at time 26000\nFAIL: reload count zero credit_count mismatch at time 86000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: no posedge yet after pop_credit rise credit_count mismatch at time 101000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: reload zero before increment credit_count mismatch at time 126000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: sender reset priority reload credit_count mismatch at time 216000\nFAILURES: 9\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_13",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init0 credit_count mismatch at time 6000\nFAIL: sender reset reload init0 credit_count mismatch at time 26000\nFAIL: reload count zero credit_count mismatch at time 86000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: no posedge yet after pop_credit rise credit_count mismatch at time 101000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: reload zero before increment credit_count mismatch at time 126000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: sender reset priority reload credit_count mismatch at time 216000\nFAILURES: 9\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_14",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst immediate block init0 push_credit must be low in reset state at time 2000\nFAIL: rst reload init0 push_credit must be low in reset state at time 6000\nFAIL: rst immediate block init1 push_credit must be low in reset state at time 11000\nFAIL: rst reload init1 push_credit must be low in reset state at time 16000\nFAIL: sender reset immediate block push_credit must be low in reset state at time 21000\nFAIL: sender reset reload init0 push_credit must be low in reset state at time 26000\nFAIL: data path still passes during rst push_credit must be low in reset state at time 41000\nFAIL: data path still passes during sender reset push_credit must be low in reset state at time 51000\nFAIL: prepare push_credit priority reset push_credit must be low in reset state at time 61000\nFAIL: reload count for push_credit priority push_credit must be low in reset state at time 66000\nFAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: push_credit should be low when stalled at time 72000\nFAIL: prepare count zero push_credit must be low in reset state at time 81000\nFAIL: reload count zero push_credit must be low in reset state at time 86000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: prep increment from zero push_credit must be low in reset state at time 121000\nFAIL: reload zero before increment push_credit must be low in reset state at time 126000\nFAIL: sampled push_credit should be low during stalled increment setup at time 131000\nFAIL: prep previous-cycle decrement push_credit must be low in reset state at time 141000\nFAIL: reload one before decrement push_credit must be low in reset state at time 146000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: current push_credit should be low when stalled at time 161000\nFAIL: prep simultaneous inc dec push_credit must be low in reset state at time 171000\nFAIL: reload one before simultaneous inc dec push_credit must be low in reset state at time 176000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: reset priority over update with rst push_credit must be low in reset state at time 201000\nFAIL: rst priority reload push_credit must be low in reset state at time 206000\nFAIL: reset priority over update with sender reset push_credit must be low in reset state at time 211000\nFAIL: sender reset priority reload push_credit must be low in reset state at time 216000\nFAILURES: 29\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_15",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init0 credit_count mismatch at time 6000\nFAIL: sender reset reload init0 credit_count mismatch at time 26000\nFAIL: reload count zero credit_count mismatch at time 86000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: no posedge yet after pop_credit rise credit_count mismatch at time 101000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: reload zero before increment credit_count mismatch at time 126000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: sender reset priority reload credit_count mismatch at time 216000\nFAILURES: 9\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_16",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAILURES: 3\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_17",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init0 credit_count mismatch at time 6000\nFAIL: sender reset reload init0 credit_count mismatch at time 26000\nFAIL: reload count zero credit_count mismatch at time 86000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: no posedge yet after pop_credit rise credit_count mismatch at time 101000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: reload zero before increment credit_count mismatch at time 126000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: sender reset priority reload credit_count mismatch at time 216000\nFAILURES: 9\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_18",
+      "compiled": true,
+      "passed": true,
+      "compile_error": "",
+      "sim_output": "PASS\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_19",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init1 credit_count mismatch at time 16000\nFAIL: reload count for push_credit priority credit_count mismatch at time 66000\nFAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: reload one before decrement credit_count mismatch at time 146000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: reload one before simultaneous inc dec credit_count mismatch at time 176000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: rst priority reload credit_count mismatch at time 206000\nFAILURES: 8\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_20",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: initial idle pop_data mismatch at time 1000\nFAIL: sender reset immediate block pop_data mismatch at time 21000\nFAIL: sender reset reload init0 pop_data mismatch at time 26000\nFAIL: leave sender reset pop_data mismatch at time 31000\nFAIL: active data valid 00 pop_data mismatch at time 32000\nFAIL: active data valid 5a pop_data mismatch at time 33000\nFAIL: data path still passes during rst pop_data mismatch at time 41000\nFAIL: pop_data must pass through during rst at time 41000\nFAIL: final active sanity pop_data mismatch at time 221000\nFAIL: final active sanity pop_data at time 221000\nFAILURES: 10\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_21",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: initial idle pop_data mismatch at time 1000\nFAIL: rst immediate block init0 pop_data mismatch at time 2000\nFAIL: rst reload init0 pop_data mismatch at time 6000\nFAIL: rst immediate block init1 pop_data mismatch at time 11000\nFAIL: rst reload init1 pop_data mismatch at time 16000\nFAIL: sender reset immediate block pop_data mismatch at time 21000\nFAIL: sender reset reload init0 pop_data mismatch at time 26000\nFAIL: leave sender reset pop_data mismatch at time 31000\nFAIL: active data valid 00 pop_data mismatch at time 32000\nFAIL: active data valid 5a pop_data mismatch at time 33000\nFAIL: active data valid a5 pop_data mismatch at time 34000\nFAIL: active data valid ff pop_data mismatch at time 35000\nFAIL: data path still passes during rst pop_data mismatch at time 41000\nFAIL: pop_data must pass through during rst at time 41000\nFAIL: data path still passes during sender reset pop_data mismatch at time 51000\nFAIL: pop_data must pass through during sender reset at time 51000\nFAIL: prepare push_credit priority reset pop_data mismatch at time 61000\nFAIL: reload count for push_credit priority pop_data mismatch at time 66000\nFAIL: active with credit available pop_data mismatch at time 71000\nFAIL: stall suppresses push_credit pop_data mismatch at time 72000\nFAIL: prepare count zero pop_data mismatch at time 81000\nFAIL: reload count zero pop_data mismatch at time 86000\nFAIL: count zero no push_credit pop_data mismatch at time 91000\nFAIL: no count change before posedge on pop_credit rise pop_data mismatch at time 101000\nFAIL: no count change before posedge on pop_credit fall pop_data mismatch at time 111000\nFAIL: prep increment from zero pop_data mismatch at time 121000\nFAIL: reload zero before increment pop_data mismatch at time 126000\nFAIL: increment cycle sample pop_data mismatch at time 131000\nFAIL: increment from pop_credit only pop_data mismatch at time 136000\nFAIL: prep previous-cycle decrement pop_data mismatch at time 141000\nFAIL: reload one before decrement pop_data mismatch at time 146000\nFAIL: sample cycle with push_credit high pop_data mismatch at time 151000\nFAIL: current push_credit forced low before decrement edge pop_data mismatch at time 161000\nFAIL: previous-cycle push_credit must decrement pop_data mismatch at time 166000\nFAIL: prep simultaneous inc dec pop_data mismatch at time 171000\nFAIL: reload one before simultaneous inc dec pop_data mismatch at time 176000\nFAIL: sample prev push_credit for simultaneous inc dec pop_data mismatch at time 181000\nFAIL: set simultaneous inc dec edge pop_data mismatch at time 191000\nFAIL: simultaneous pop_credit and prev push_credit pop_data mismatch at time 196000\nFAIL: reset priority over update with rst pop_data mismatch at time 201000\nFAIL: rst priority reload pop_data mismatch at time 206000\nFAIL: reset priority over update with sender reset pop_data mismatch at time 211000\nFAIL: sender reset priority reload pop_data mismatch at time 216000\nFAIL: final active sanity pop_data mismatch at time 22100"
+    },
+    {
+      "mutant_name": "mutant_22",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: simultaneous pop_credit and prev push_credit credit_count mismatch at time 196000\nFAILURES: 5\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_23",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init1 push_credit must be low in reset state at time 16000\nFAIL: sender reset reload init0 push_credit must be low in reset state at time 26000\nFAIL: reload count for push_credit priority push_credit must be low in reset state at time 66000\nFAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: prep previous-cycle decrement push_credit must be low in reset state at time 141000\nFAIL: reload one before decrement push_credit must be low in reset state at time 146000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: reload one before simultaneous inc dec push_credit must be low in reset state at time 176000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: sender reset priority reload push_credit must be low in reset state at time 216000\nFAILURES: 10\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_24",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst reload init1 credit_count mismatch at time 16000\nFAIL: reload count for push_credit priority credit_count mismatch at time 66000\nFAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: increment from pop_credit only credit_count mismatch at time 136000\nFAIL: reload one before decrement credit_count mismatch at time 146000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: reload one before simultaneous inc dec credit_count mismatch at time 176000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: simultaneous pop_credit and prev push_credit credit_count mismatch at time 196000\nFAIL: rst priority reload credit_count mismatch at time 206000\nFAILURES: 10\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_25",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst immediate block init0 push_credit must be low in reset state at time 2000\nFAIL: rst reload init0 push_credit must be low in reset state at time 6000\nFAIL: rst immediate block init1 push_credit must be low in reset state at time 11000\nFAIL: rst reload init1 push_credit must be low in reset state at time 16000\nFAIL: sender reset immediate block push_credit must be low in reset state at time 21000\nFAIL: sender reset reload init0 push_credit must be low in reset state at time 26000\nFAIL: data path still passes during rst push_credit must be low in reset state at time 41000\nFAIL: data path still passes during sender reset push_credit must be low in reset state at time 51000\nFAIL: prepare push_credit priority reset push_credit must be low in reset state at time 61000\nFAIL: reload count for push_credit priority push_credit must be low in reset state at time 66000\nFAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: push_credit should be low when stalled at time 72000\nFAIL: prepare count zero push_credit must be low in reset state at time 81000\nFAIL: reload count zero push_credit must be low in reset state at time 86000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: prep increment from zero push_credit must be low in reset state at time 121000\nFAIL: reload zero before increment push_credit must be low in reset state at time 126000\nFAIL: sampled push_credit should be low during stalled increment setup at time 131000\nFAIL: prep previous-cycle decrement push_credit must be low in reset state at time 141000\nFAIL: reload one before decrement push_credit must be low in reset state at time 146000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: current push_credit should be low when stalled at time 161000\nFAIL: prep simultaneous inc dec push_credit must be low in reset state at time 171000\nFAIL: reload one before simultaneous inc dec push_credit must be low in reset state at time 176000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: reset priority over update with rst push_credit must be low in reset state at time 201000\nFAIL: rst priority reload push_credit must be low in reset state at time 206000\nFAIL: reset priority over update with sender reset push_credit must be low in reset state at time 211000\nFAIL: sender reset priority reload push_credit must be low in reset state at time 216000\nFAILURES: 29\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_26",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: push_credit should be low when stalled at time 72000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: sampled push_credit should be low during stalled increment setup at time 131000\nFAIL: increment from pop_credit only credit_count mismatch at time 136000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: current push_credit should be low when stalled at time 161000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: simultaneous pop_credit and prev push_credit credit_count mismatch at time 196000\nFAILURES: 10\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_27",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: simultaneous pop_credit and prev push_credit credit_count mismatch at time 196000\nFAILURES: 6\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_28",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: rst immediate block init0 pop_data mismatch at time 2000\nFAIL: rst reload init0 pop_data mismatch at time 6000\nFAIL: sender reset immediate block pop_data mismatch at time 21000\nFAIL: sender reset reload init0 pop_data mismatch at time 26000\nFAIL: active data valid 5a pop_data mismatch at time 33000\nFAIL: active data valid ff pop_data mismatch at time 35000\nFAIL: data path still passes during sender reset pop_data mismatch at time 51000\nFAIL: pop_data must pass through during sender reset at time 51000\nFAIL: prepare push_credit priority reset pop_data mismatch at time 61000\nFAIL: reload count for push_credit priority pop_data mismatch at time 66000\nFAIL: active with credit available pop_data mismatch at time 71000\nFAIL: stall suppresses push_credit pop_data mismatch at time 72000\nFAIL: prepare count zero pop_data mismatch at time 81000\nFAIL: reload count zero pop_data mismatch at time 86000\nFAIL: count zero no push_credit pop_data mismatch at time 91000\nFAIL: no count change before posedge on pop_credit rise pop_data mismatch at time 101000\nFAIL: no count change before posedge on pop_credit fall pop_data mismatch at time 111000\nFAIL: prep increment from zero pop_data mismatch at time 121000\nFAIL: reload zero before increment pop_data mismatch at time 126000\nFAIL: increment cycle sample pop_data mismatch at time 131000\nFAIL: increment from pop_credit only pop_data mismatch at time 136000\nFAIL: prep previous-cycle decrement pop_data mismatch at time 141000\nFAIL: reload one before decrement pop_data mismatch at time 146000\nFAIL: sample cycle with push_credit high pop_data mismatch at time 151000\nFAIL: current push_credit forced low before decrement edge pop_data mismatch at time 161000\nFAIL: previous-cycle push_credit must decrement pop_data mismatch at time 166000\nFAIL: prep simultaneous inc dec pop_data mismatch at time 171000\nFAIL: reload one before simultaneous inc dec pop_data mismatch at time 176000\nFAIL: sample prev push_credit for simultaneous inc dec pop_data mismatch at time 181000\nFAIL: set simultaneous inc dec edge pop_data mismatch at time 191000\nFAIL: simultaneous pop_credit and prev push_credit pop_data mismatch at time 196000\nFAIL: reset priority over update with rst pop_data mismatch at time 201000\nFAIL: rst priority reload pop_data mismatch at time 206000\nFAIL: reset priority over update with sender reset pop_data mismatch at time 211000\nFAIL: sender reset priority reload pop_data mismatch at time 216000\nFAIL: final active sanity pop_data mismatch at time 221000\nFAIL: final active sanity pop_data at time 221000\nFAILURES: 37\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_29",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should assert when count=1, withhold=0, stall=0 at time 71000\nFAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAIL: no posedge yet after pop_credit fall credit_count mismatch at time 111000\nFAIL: push_credit should be high before previous-cycle decrement test at time 151000\nFAIL: previous-cycle push_credit must decrement credit_count mismatch at time 166000\nFAIL: push_credit should be high before simultaneous inc dec at time 181000\nFAIL: simultaneous pop_credit and prev push_credit credit_count mismatch at time 196000\nFAILURES: 7\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    },
+    {
+      "mutant_name": "mutant_30",
+      "compiled": true,
+      "passed": false,
+      "compile_error": "",
+      "sim_output": "FAIL: push_credit should be low when count=0 and withhold=0 at time 91000\nFAILURES: 1\n/mnt/c/Users/makhi/Onedrive/Documents/New project/phase2/verification_agent/codex_verification_agent_for_rtl_testbench_generation/tb/credit_receiver_tb.v:347: $finish called at 221000 (1ps)\n"
+    }
+  ]
+}

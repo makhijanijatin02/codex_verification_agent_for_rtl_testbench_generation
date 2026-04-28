@@ -1,4 +1,266 @@
 {
-  "raw_response": "{\"module_type\":\"sequential\",\"exhaustive_possible\":false,\"total_input_bits\":3,\"reset_tests\":[{\"description\":\"Assert reset high for two cycles from power-on with enable both 0 and 1, verify count synchronously clears to 0 and stays 0 until reset drops\",\"cycles\":2},{\"description\":\"Deassert reset, advance count, then reassert reset while enable remains 1 to confirm reset priority and synchronous clear on next clk edge\",\"cycles\":4}],\"normal_tests\":[{\"description\":\"Incrementing sequence with enable high to check modulo-16 behavior\",\"vectors\":[{\"cycle\":0,\"reset\":0,\"enable\":1,\"expected_count\":\"0000\"},{\"cycle\":1,\"reset\":0,\"enable\":1,\"expected_count\":\"0001\"},{\"cycle\":2,\"reset\":0,\"enable\":1,\"expected_count\":\"0010\"},{\"cycle\":3,\"reset\":0,\"enable\":1,\"expected_count\":\"0011\"}]},{\"description\":\"Hold behavior with enable low keeps count constant\",\"vectors\":[{\"cycle\":0,\"reset\":0,\"enable\":1,\"expected_count\":\"0100\"},{\"cycle\":1,\"reset\":0,\"enable\":0,\"expected_count\":\"0100\"},{\"cycle\":2,\"reset\":0,\"enable\":0,\"expected_count\":\"0100\"}]}],\"corner_case_tests\":[{\"description\":\"Wrap-around from 1111 to 0000 with enable high and reset low\",\"vectors\":[{\"cycle\":0,\"reset\":0,\"enable\":1,\"init_count\":\"1110\",\"expected_after_cycles\":[{\"cycle\":1,\"count\":\"1111\"},{\"cycle\":2,\"count\":\"0000\"}]}]},{\"description\":\"Simultaneous reset and enable high should clear count\",\"vectors\":[{\"cycle\":0,\"reset\":0,\"enable\":1,\"expected_count\":\"0011\"},{\"cycle\":1,\"reset\":1,\"enable\":1,\"expected_count\":\"0000\"},{\"cycle\":2,\"reset\":0,\"enable\":1,\"expected_count\":\"0001\"}]},{\"description\":\"Glitch resistance: toggle enable around clock edges (setup/hold) to ensure only sampled on posedge\",\"vectors\":[{\"pre_clk\":\"enable toggles within +/-1ns of clk edge while reset=0; expect count increments exactly once per posedge, no double increments\"}]}],\"sequence_tests\":[{\"description\":\"Full state traversal: alternate enable bursts and holds to cover reset, increment, hold transitions\",\"num_cycles\":20,\"sequence\":[{\"cycles\":2,\"reset\":1,\"enable\":1},{\"cycles\":6,\"reset\":0,\"enable\":1},{\"cycles\":4,\"reset\":0,\"enable\":0},{\"cycles\":1,\"reset\":1,\"enable\":0},{\"cycles\":7,\"reset\":0,\"enable\":1}]}},{\"description\":\"Reset pulse mid-count to check synchronous priority and recovery path\",\"num_cycles\":10,\"sequence\":[{\"cycles\":3,\"reset\":0,\"enable\":1},{\"cycles\":1,\"reset\":1,\"enable\":1},{\"cycles\":6,\"reset\":0,\"enable\":1}]}],\"random_tests\":{\"num_vectors\":200,\"description\":\"Randomized enable/reset pulses with random initial counts across 200 cycles, include random single-cycle reset glitches and enable bursts to expose sequencing bugs\"},\"key_discriminators\":[\"Reset sampled high on clk edge forces next-state 0 regardless of enable\",\"Wrap-around exactly at 16 counts, no skipping or double increment\",\"Count holds perfectly when enable=0 with reset=0, even with enable glitches near clk edge\",\"Outputs update strictly on clk rising edge; no async reset or combinational leakage\"]}",
-  "parse_error": true
+  "module_type": "sequential",
+  "exhaustive_possible": false,
+  "total_input_bits": 2,
+  "reset_tests": [
+    {
+      "description": "Apply synchronous active-high reset on a rising edge and verify count becomes 0 regardless of prior state. First drive enable=1 for several cycles to move count away from 0, then assert reset=1 before the next posedge and check count=0 exactly after that posedge.",
+      "cycles": 6
+    },
+    {
+      "description": "Verify reset is not asynchronous. Drive counter to a nonzero value, assert reset between rising edges, and check count does not change until the next posedge clk.",
+      "cycles": 4
+    },
+    {
+      "description": "Verify reset priority over enable. With count at a nonzero value, drive reset=1 and enable=1 together across a rising edge and expect count=0, not count+1.",
+      "cycles": 4
+    },
+    {
+      "description": "Check reset polarity. Hold reset=0 while toggling clock and confirm no forced clearing occurs; then assert reset=1 on a rising edge and confirm clearing does occur.",
+      "cycles": 5
+    },
+    {
+      "description": "After reset deassertion, verify count remains 0 when enable=0 on the following rising edge, proving no unintended post-reset increment or stale state.",
+      "cycles": 3
+    }
+  ],
+  "normal_tests": [
+    {
+      "description": "Basic increment sequence from 0 with enable continuously high. After a reset, apply enable=1 for several rising edges and expect count sequence 0,1,2,3,4 on successive post-edge observations.",
+      "vectors": [
+        {
+          "precondition": "reset applied on posedge",
+          "enable": 0,
+          "reset": 1,
+          "expected_count": 0
+        },
+        {
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 0,
+          "expected_count": 1
+        },
+        {
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 0,
+          "expected_count": 2
+        },
+        {
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 0,
+          "expected_count": 3
+        },
+        {
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 0,
+          "expected_count": 4
+        }
+      ]
+    },
+    {
+      "description": "Hold behavior with enable low. Start from a known nonzero count and apply multiple rising edges with enable=0, reset=0; count must remain constant.",
+      "vectors": [
+        {
+          "precondition": "count set to 3",
+          "edge": "posedge",
+          "enable": 0,
+          "reset": 0,
+          "expected_count": 3
+        },
+        {
+          "edge": "posedge",
+          "enable": 0,
+          "reset": 0,
+          "expected_count": 3
+        },
+        {
+          "edge": "posedge",
+          "enable": 0,
+          "reset": 0,
+          "expected_count": 3
+        }
+      ]
+    },
+    {
+      "description": "Alternating enable pattern to verify correct increment-versus-hold decisions on each rising edge.",
+      "vectors": [
+        {
+          "precondition": "reset to 0",
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 0,
+          "expected_count": 1
+        },
+        {
+          "edge": "posedge",
+          "enable": 0,
+          "reset": 0,
+          "expected_count": 1
+        },
+        {
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 0,
+          "expected_count": 2
+        },
+        {
+          "edge": "posedge",
+          "enable": 0,
+          "reset": 0,
+          "expected_count": 2
+        }
+      ]
+    },
+    {
+      "description": "Verify registered output behavior by checking count is stable between clock edges and changes only immediately after the intended rising edge.",
+      "vectors": [
+        {
+          "precondition": "count at 2, enable=1, reset=0",
+          "sampling_point": "between_edges_before_posedge",
+          "expected_count": 2
+        },
+        {
+          "sampling_point": "immediately_after_posedge",
+          "expected_count": 3
+        },
+        {
+          "sampling_point": "between_edges_before_next_posedge",
+          "expected_count": 3
+        }
+      ]
+    }
+  ],
+  "corner_case_tests": [
+    {
+      "description": "Overflow wrap-around at maximum value. Drive count to 15, then apply enable=1 with reset=0 on the next rising edge and expect count=0.",
+      "vectors": [
+        {
+          "precondition": "count set to 15",
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 0,
+          "expected_count": 0
+        }
+      ]
+    },
+    {
+      "description": "Boundary transition 14 to 15 followed by 15 to 0 to catch off-by-one errors and wrong width implementations.",
+      "vectors": [
+        {
+          "precondition": "count set to 14",
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 0,
+          "expected_count": 15
+        },
+        {
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 0,
+          "expected_count": 0
+        }
+      ]
+    },
+    {
+      "description": "All-zeros control boundary. With reset=0 and enable=0 over repeated cycles, verify no spontaneous changes from any sampled state including 0 and 15.",
+      "vectors": [
+        {
+          "precondition": "count set to 0",
+          "edge": "posedge",
+          "enable": 0,
+          "reset": 0,
+          "expected_count": 0
+        },
+        {
+          "precondition": "count set to 15",
+          "edge": "posedge",
+          "enable": 0,
+          "reset": 0,
+          "expected_count": 15
+        }
+      ]
+    },
+    {
+      "description": "Simultaneous reset and enable at boundary state 15. Expect reset to win and produce 0, distinguishing priority bugs from ordinary wrap logic.",
+      "vectors": [
+        {
+          "precondition": "count set to 15",
+          "edge": "posedge",
+          "enable": 1,
+          "reset": 1,
+          "expected_count": 0
+        }
+      ]
+    },
+    {
+      "description": "Wrong-edge sensitivity check. Toggle enable and sample around a falling edge; count must not change on negedge and must change only on the following posedge if enable remains asserted.",
+      "vectors": [
+        {
+          "precondition": "count set to 5, enable=1, reset=0",
+          "edge": "negedge",
+          "expected_count": 5
+        },
+        {
+          "edge": "next_posedge",
+          "expected_count": 6
+        }
+      ]
+    },
+    {
+      "description": "Near-edge control changes to expose setup/hold style issues in test intent and distinguish combinational or glitchy implementations. Change reset or enable shortly after a posedge and confirm no effect until the next rising edge.",
+      "vectors": [
+        {
+          "precondition": "count set to 7",
+          "timing": "assert reset shortly after posedge",
+          "sampling_point": "before_next_posedge",
+          "expected_count": 7
+        },
+        {
+          "sampling_point": "after_next_posedge",
+          "expected_count": 0
+        }
+      ]
+    }
+  ],
+  "sequence_tests": [
+    {
+      "description": "Full modulo-16 traversal with enable high. After reset, apply 16 consecutive rising edges with enable=1 and verify the exact sequence 0->1->2->...->15->0.",
+      "num_cycles": 17
+    },
+    {
+      "description": "Mixed control sequence exercising hold, increment, reset, and priority behavior in one run: reset, increment 3 times, hold 2 cycles, increment to 5, assert reset+enable together, then increment again.",
+      "num_cycles": 10
+    },
+    {
+      "description": "One-cycle-late/one-cycle-early detection sequence. Use pattern enable=1,0,1,1,0 across consecutive rising edges after reset and verify expected counts 1,1,2,3,3 exactly after each posedge.",
+      "num_cycles": 6
+    },
+    {
+      "description": "Nonzero reset recovery sequence. Increment to 9, hold one cycle, reset on next posedge, hold one cycle, then increment twice; expected sequence around reset is 9,9,0,0,1,2.",
+      "num_cycles": 8
+    },
+    {
+      "description": "Edge-discrimination sequence. Keep enable asserted across several falling edges and rising edges while sampling after every edge to prove state updates occur only on rising edges.",
+      "num_cycles": 6
+    }
+  ],
+  "random_tests": {
+    "num_vectors": 100,
+    "description": "Generate 100 random cycle-by-cycle control pairs for (reset, enable), with biased inclusion of corner cases: roughly 20% reset=1, 20% simultaneous reset=1 and enable=1, and the rest mixed enable activity. Maintain a software reference model of the 4-bit synchronous counter and compare count after every rising edge. Also insert random mid-cycle control toggles and intermediate samples to catch asynchronous-reset, combinational-update, stale-output, and wrong-edge bugs."
+  },
+  "key_discriminators": [
+    "Reset is synchronous active-high only; asserting reset between rising edges must not immediately change count.",
+    "If reset and enable are both high on a rising edge, reset has priority and count must become 0.",
+    "Count must update on posedge clk, not negedge and not continuously.",
+    "When enable is low and reset is low on a rising edge, count must hold exactly with no drift or stale delayed update.",
+    "Transition 14->15 and 15->0 must be exact, exposing off-by-one logic and wrong counter width.",
+    "Output count is registered state, so checks between clock edges should distinguish registered-output implementations from combinational-output bugs.",
+    "Long increment sequences should expose one-cycle-early or one-cycle-late behavior.",
+    "Boundary tests at count=15 separate correct wrap-around from saturation-at-15 mutants.",
+    "Reset polarity tests separate active-high from incorrect active-low implementations.",
+    "Mid-cycle stimulus changes separate synchronous behavior from asynchronous or glitch-prone implementations."
+  ]
 }

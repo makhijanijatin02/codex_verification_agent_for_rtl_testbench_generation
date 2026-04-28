@@ -13,18 +13,74 @@ Your test plan should include:
 For each test category, describe specific test vectors or scenarios.
 
 IMPORTANT PRINCIPLES:
+- Respect the parsed specification fields `oracle_style`, `guaranteed_properties`, `ambiguous_properties`, and `forbidden_assumptions`.
+- Every strict check in the plan must be traceable to a guaranteed property.
+- If a behavior is ambiguous, include it under unsafe checks rather than turning it into a strict expectation.
 - For small combinational modules (few inputs), prefer EXHAUSTIVE testing of all input combinations
 - For sequential modules, test multi-cycle sequences that exercise all state transitions
 - Always test reset behavior first
 - Test signal priorities when multiple controls can be active simultaneously
 - Include hold/setup timing edge cases for sequential logic
 - Test boundary conditions (all-zeros, all-ones, alternating bits)
+- Explicitly target likely mutant classes such as off-by-one logic, wrong bit slicing, wrong shift direction, missed default/reset behavior, stale outputs, and incorrect update edge
+- Prefer a few highly discriminative scenarios over many redundant ones
+- When possible, include scenarios that separate combinational-output bugs from registered-output bugs
+- For counters/FSMs/pipelines, include sequences that expose one-cycle-late or one-cycle-early behavior
+- Include enough information for a later code generator to build an independent oracle, not just stimulus examples
+- When the spec describes a direct formula or mapping, make that formula obvious through the vector descriptions and key discriminators
+- For combinational modules with roughly 12 or fewer effective input bits, mark exhaustive_possible=true and favor full enumeration
+- For sequential modules, avoid plans that require ad hoc precondition clock edges unless the expected-state trace is explicit
+- For synchronous-reset modules, do not require reset outputs to take their reset values immediately when `reset` is merely driven high before a qualifying clock edge. Check reset effects only after the active clock edge unless the spec explicitly says asynchronous reset.
+- For synchronous-reset modules, test reset-state outputs first with idle handshakes (`push_valid=0`, `pop_ready=0`) unless the specification explicitly defines behavior when reset overlaps active transfers.
+- If the specification says reset clears state but does not spell out same-cycle combinational interaction with active handshakes during reset, treat "reset asserted while transfers are requested" as ambiguous and avoid strict output checks in that scenario.
+- For synchronous-reset modules, treat `*_next` predictions during reset as ambiguous unless the specification explicitly defines them under reset.
+- For CDC/FIFO/handshake protocols, prioritize externally visible invariants over speculative internal-state arithmetic
+- Do not require exact synchronization latency, exact pulse timing windows, or exact counter values unless the spec states them explicitly
+- Prefer checks such as ordering, stability under backpressure, legal handshake completion, reset blocking behavior, no duplication, no spontaneous disappearance, and eventual effects after synchronization
+- If a counter/status signal semantics are ambiguous, generate weaker monotonic/consistency checks rather than exact numeric expectations
+- Avoid plans that depend on "within N remote-clock cycles" visibility unless the specification explicitly gives such a bound
+- Avoid plans that equate internal queue depth to exposed status counters unless the spec explicitly guarantees that equality
+- For ready/valid FIFOs, if the spec does not completely define empty-state combinational preview behavior, avoid strict checks on `pop_valid`/`pop_data` while empty except for cases explicitly guaranteed such as same-cycle bypass with both producer-valid and consumer-ready.
+- For credit-based modules, if credit availability is expressed as arithmetic on a 1-bit signal or mixes combinational and previous-cycle wording, avoid strict truth-table checks on the derived availability signal; prefer legality checks such as reset blocking, stall blocking, direct data forwarding, valid gating, and "push_credit implies sendable credit" style implications.
+- For status outputs such as `items`, `slots`, and `*_next`, prefer invariant relations and reset/end-state checks over full cycle-by-cycle exact equality when handshake timing around empty/full edges is not completely explicit.
+- For dual-clock FIFO / CDC modules, treat remote-domain visibility and remote-domain counters as ambiguous by default. Prefer local-domain legality, stability, reset, and ordering checks over exact counter equations.
+- For protocol-heavy modules, design the plan in two layers:
+  - Layer 1: a minimal safe oracle made only of unquestionably guaranteed checks
+  - Layer 2: a very small number of extra discriminators added only if the spec is explicit enough
+- If a status output is not needed to distinguish obvious bugs, it is acceptable for the plan to leave it unchecked rather than risk overspecification.
+- For `credit_receiver`-style single-credit modules, do not make `credit_available` a primary strict check when its behavior is expressed as 1-bit subtraction. Use `push_credit` reset/stall blocking, `pop_valid` gating, direct pass-through, and previous-cycle credit-count update checks first.
+- For `fifo_flops`-style modules, do not make `items`, `slots`, `items_next`, or `slots_next` the primary discriminators in the first-pass oracle. Prioritize reset behavior, guaranteed empty-bypass behavior, FIFO ordering, and visible-data stability.
+- For `fifo_flops`-style modules, also treat same-cycle status/output behavior in the empty-edge cases as ambiguous unless the spec is explicit:
+  - do not strictly require `pop_valid == 0` before the storage edge when the FIFO is empty, `push_valid=1`, and `pop_ready=0`
+  - do not strictly require `pop_valid == 0` in any pre-edge empty cycle where `push_valid=1` but bypass is not occurring, unless the specification explicitly defines that preview behavior
+  - do not strictly require `empty/items/slots/full` to take one exact combinational value during the same cycle as an empty-state bypass transfer
+  - prefer checking the guaranteed direct transfer itself and the absence of duplication/loss afterward
+- For `fifo_flops`-style modules, status outputs become safer discriminators only in stable interior states and clearly clocked transitions. Good examples are:
+  - after a synchronous reset edge: `empty=1`, `full=0`, `items=0`, `slots=13`
+  - after storing exactly one buffered item and then idling: `empty=0`, `full=0`, `items=1`, `slots=12`
+  - in that same one-item idle state: `empty_next=0`, `full_next=0`, `items_next=1`, `slots_next=12`
+  - on a one-item pop request: `empty_next=1`, `items_next=0`
+  - at 12 items with a push and no pop: `full_next=1`, `items_next=13`
+  - when fully occupied and idle: `push_ready=0`, `full=1`
+  Use these stable-state checks before attempting any same-cycle empty/full boundary arithmetic.
+- For FIFO modules, when checking a buffered pop transaction, verify the returned item on the handshake cycle before the clock edge. Do not require the old head to remain on `pop_data` after the pop edge unless the specification explicitly guarantees a registered output stage.
+- For `cdc_fifo_flops_push_credit`-style modules, do not make `push_slots`, `credit_count_push`, `credit_available_push`, or `pop_items` primary strict checks unless the specification explicitly states exact cross-domain timing/meaning for them.
 
 Return a JSON object with this structure:
 {
     "module_type": "combinational" or "sequential",
+    "oracle_style": "formula" or "cycle_accurate" or "protocol_invariant",
     "exhaustive_possible": true/false,
     "total_input_bits": N,
+    "safe_checks": [
+        "Checks that are explicitly guaranteed by the spec and safe to assert strictly"
+    ],
+    "unsafe_checks": [
+        "Tempting but ambiguous checks that the generated testbench must avoid asserting strictly"
+    ],
+    "minimal_safe_oracle": [
+        "The smallest set of strict checks that should definitely be implemented before any optional stronger checks"
+    ],
     "reset_tests": [
         {"description": "Apply reset and verify all outputs are 0", "cycles": 2}
     ],

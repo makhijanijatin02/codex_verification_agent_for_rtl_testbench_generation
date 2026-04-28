@@ -1,0 +1,261 @@
+{
+  "module_name": "cdc_fifo_flops_push_credit",
+  "ports": [
+    {
+      "name": "push_clk",
+      "direction": "input",
+      "width": 1,
+      "type": "clock"
+    },
+    {
+      "name": "push_rst",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "pop_clk",
+      "direction": "input",
+      "width": 1,
+      "type": "clock"
+    },
+    {
+      "name": "pop_rst",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "push_sender_in_reset",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "push_receiver_in_reset",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "push_credit_stall",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "push_credit",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "push_valid",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "pop_ready",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "pop_valid",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "push_full",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "pop_empty",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "push_data",
+      "direction": "input",
+      "width": 8,
+      "type": "data"
+    },
+    {
+      "name": "pop_data",
+      "direction": "output",
+      "width": 8,
+      "type": "data"
+    },
+    {
+      "name": "push_slots",
+      "direction": "output",
+      "width": 5,
+      "type": "status"
+    },
+    {
+      "name": "credit_initial_push",
+      "direction": "input",
+      "width": 5,
+      "type": "config"
+    },
+    {
+      "name": "credit_withhold_push",
+      "direction": "input",
+      "width": 5,
+      "type": "config"
+    },
+    {
+      "name": "credit_count_push",
+      "direction": "output",
+      "width": 5,
+      "type": "status"
+    },
+    {
+      "name": "credit_available_push",
+      "direction": "output",
+      "width": 5,
+      "type": "status"
+    },
+    {
+      "name": "pop_items",
+      "direction": "output",
+      "width": 5,
+      "type": "status"
+    }
+  ],
+  "has_clock": true,
+  "clock_name": "push_clk,pop_clk",
+  "has_reset": true,
+  "reset_name": "push_rst,pop_rst",
+  "reset_type": "dual_sync_active_high_with_1_cycle_internal_registration",
+  "is_sequential": true,
+  "behavior_summary": "Dual-clock FIFO with 17 storage entries of 8 bits each. Writes are initiated from the push domain by asserting push_valid for one push_clk cycle; the corresponding push_data item is accepted into FIFO storage subject to available capacity/credits. Reads are completed in the pop domain on a pop_clk edge when pop_valid and pop_ready are both high; that handshake dequeues exactly one item. When data is available but not consumed, pop_valid remains asserted and pop_data remains stable until consumption. pop_valid and pop_data are combinationally derived rather than fully registered, allowing an empty FIFO to expose newly pushed data through a cut-through path. The push side uses credit return flow control: each successfully dequeued item eventually causes a one-cycle push_credit pulse in the push clock domain unless credit return is stalled by push_credit_stall. The write-side reset condition is the logical OR of push_rst and push_sender_in_reset, with reset effect delayed by one push_clk cycle due to internal reset registration. The read side is reset by pop_rst, also with a one-pop_clk-cycle delayed effect.",
+  "edge_cases": [
+    "FIFO nominal depth is 17 entries, so occupancy and slot counters must represent values from 0 through 17.",
+    "push_full should indicate no free space; writes attempted while full are not explicitly defined as accepted, so a strict testbench should assume accepted writes require available space.",
+    "pop_empty should indicate no stored data; reads only dequeue on pop_valid && pop_ready.",
+    "When pop_valid is high and pop_ready is low, pop_data must remain stable and the item must not be removed.",
+    "Because pop_valid and pop_data are unregistered, an empty FIFO may show cut-through behavior from a newly pushed item to the pop side; exact same-cycle visibility across asynchronous domains is not safely cycle-checkable.",
+    "Each successful pop returns one credit pulse to the push domain, but the exact push_clk cycle of the returned credit is affected by CDC synchronization and is not fully specified.",
+    "If push_credit_stall is asserted, return of credits can be paused; delayed credits should not be assumed lost unless the spec explicitly says so, which it does not.",
+    "The write-side logic remains in reset while either push_rst or push_sender_in_reset is asserted, due to OR-combined reset intent.",
+    "Both push_rst and pop_rst are synchronous and internally registered, so visible reset effects are delayed by one cycle in their respective domains rather than immediate.",
+    "credit_available_push is described as credit_count_push minus credit_withhold_push; behavior for underflow if withhold exceeds count is not explicitly specified.",
+    "push_slots, credit_count_push, credit_available_push, and pop_items are status quantities crossing or derived from cross-domain state; exact phase relationship to true occupancy may lag because of synchronizers.",
+    "Simultaneous push and pop activity can occur on independent clocks; FIFO ordering must remain first-in-first-out for accepted transactions even when operations overlap in time."
+  ],
+  "state_transitions": [
+    "Push-domain reset state -> active push-domain operation after the internally registered write-side reset deasserts.",
+    "Pop-domain reset state -> active pop-domain operation after the internally registered read-side reset deasserts.",
+    "Logical FIFO occupancy N -> N+1 when an item is accepted on the push side.",
+    "Logical FIFO occupancy N -> N-1 when an item is consumed on the pop side.",
+    "Empty state (occupancy 0) -> non-empty state when the first item is accepted.",
+    "Non-empty state -> empty state when the last available item is consumed.",
+    "Not-full state -> full state when occupancy reaches 17.",
+    "Full state -> not-full state when at least one item is consumed.",
+    "Held-output pop state -> same held-output state while pop_valid=1 and pop_ready=0, with identical pop_data until the eventual consuming handshake.",
+    "Credit-return pending conceptually arises after each successful pop and remains pending until a push_credit pulse is emitted in the push domain, unless stalled; exact microstates are implementation-specific and not fully specified."
+  ],
+  "priorities": [
+    "On the push side, reset condition (push_rst or push_sender_in_reset) overrides normal write-side operation.",
+    "On the pop side, pop_rst reset behavior overrides normal read-side operation.",
+    "For dequeuing, pop_ready only has effect when pop_valid is high; the handshake condition is pop_valid && pop_ready.",
+    "For output holding, retaining existing pop_data/pop_valid under backpressure has priority over advancing to the next item.",
+    "For returned credits, push_credit_stall suppresses or pauses credit pulse emission relative to normal credit return behavior.",
+    "If the FIFO is full, full-condition handling must prevent further accepted writes before space is freed, though exact signaling/ignore semantics for illegal push_valid are not fully specified."
+  ],
+  "mutation_risks": [
+    "Incorrect FIFO depth handling, especially treating the buffer as 16 entries instead of 17.",
+    "Off-by-one errors in push_full, pop_empty, push_slots, or pop_items around transitions 0<->1 and 16<->17.",
+    "Wrong reset semantics, such as asynchronous instead of synchronous behavior, missing the one-cycle delayed reset effect, or ignoring push_sender_in_reset.",
+    "Failing to OR push_sender_in_reset with push_rst on the write side.",
+    "Incorrect handling of pop backpressure, such as changing pop_data while pop_ready is low.",
+    "Dropping cut-through capability or incorrectly registering pop_valid/pop_data, causing extra latency when FIFO is empty.",
+    "Improper combinational cut-through that violates hold behavior during pop_valid && !pop_ready.",
+    "Returning push_credit on push-side writes instead of on successful pops.",
+    "Producing push_credit for every pop but ignoring push_credit_stall.",
+    "Losing, duplicating, or permanently suppressing credits after a temporary push_credit_stall.",
+    "Mishandling FIFO ordering under overlapping push/pop activity across the two clocks.",
+    "Incorrect synchronizer-induced status behavior, such as directly using unsynchronized pointers for full/empty logic.",
+    "Incorrect arithmetic or width handling for credit_available_push = credit_count_push - credit_withhold_push.",
+    "Updating registered/status outputs in the wrong clock domain or one cycle late/early."
+  ],
+  "oracle_style": "protocol_invariant",
+  "executable_reference": [
+    "Model accepted pushes as events on push_clk where write-side reset is inactive and the FIFO is allowed to accept data; enqueue push_data values in order.",
+    "Model accepted pops only on pop_clk edges where pop_valid && pop_ready; each accepted pop must match the oldest not-yet-popped enqueued value.",
+    "If pop_valid is high and pop_ready is low across consecutive pop_clk cycles, pop_data must remain unchanged and no item may be removed from the reference queue.",
+    "No output item may appear more times than it was accepted on the push side, and accepted items may not disappear without a matching pop handshake.",
+    "Ordering must be strict FIFO: the sequence of completed pop handshakes equals the sequence of accepted push_data transactions.",
+    "While write-side reset is active, treat the push side as reset-blocked and require push_receiver_in_reset to indicate reset state; exact acceptance during the one-cycle internal reset pipeline should follow the delayed-reset rule rather than immediate reset.",
+    "While read-side reset is active, do not require normal pop-side data delivery until the internally registered reset effect has cleared.",
+    "When a pop handshake completes, eventually exactly one push_credit pulse should be returned in the push clock domain unless stalled; during push_credit_stall, absence of pulse is allowed, but pulses must not exceed the number of completed pops.",
+    "push_credit pulses are one push_clk cycle wide when emitted.",
+    "When the FIFO is observably empty, pop_empty should assert; when a valid item is being persistently offered and not yet consumed, pop_empty should not simultaneously indicate nonexistence of data.",
+    "push_full should block further accepted writes once effective capacity is exhausted, with effective capacity potentially influenced by credit configuration."
+  ],
+  "guaranteed_properties": [
+    "The module is a dual-clock FIFO connecting a push_clk producer to a pop_clk consumer.",
+    "Data width is 8 bits and storage capacity is specified as 17 entries.",
+    "Writes are initiated on push_clk by a one-cycle push_valid assertion carrying push_data.",
+    "Reads complete on pop_clk only when both pop_valid and pop_ready are high.",
+    "If pop_valid is high and pop_ready is low, the FIFO holds the same data on pop_data until the handshake completes.",
+    "pop_valid and pop_data are not internally registered, enabling a combinational cut-through path when the FIFO is empty.",
+    "push_rst and pop_rst are active-high synchronous resets.",
+    "The effect of push_rst and pop_rst is delayed by one clock cycle in their respective domains because the resets are internally registered.",
+    "The write-side reset condition remains asserted as long as either push_rst or push_sender_in_reset is asserted.",
+    "push_receiver_in_reset indicates the FIFO reset state to the upstream module.",
+    "A successful pop causes a returned credit represented by a one-cycle push_credit pulse in the push clock domain.",
+    "push_credit can be paused by push_credit_stall.",
+    "push_full indicates no available space.",
+    "pop_empty indicates no data available.",
+    "The design uses 2-stage synchronizers for cross-domain pointer/status communication."
+  ],
+  "ambiguous_properties": [
+    "Whether push_valid alone always implies write acceptance, or only when the sender has credits / FIFO is not full; the spec describes initiation but does not define illegal-overflow behavior precisely.",
+    "The exact latency, phase alignment, and pulse timing from a successful pop to the corresponding push_credit pulse in the push_clk domain.",
+    "Whether delayed credits during push_credit_stall are queued and eventually replayed, or whether some alternative accounting is used internally, though functional loss of credits would be questionable.",
+    "The exact arithmetic semantics of credit_available_push when credit_withhold_push exceeds credit_count_push, including whether the result saturates, wraps, or is constrained by legal configuration.",
+    "The exact reset values and update timing of push_slots, credit_count_push, credit_available_push, and pop_items immediately after reset and during CDC settling.",
+    "The exact same-cycle truth table for pop_valid/pop_data during cut-through when push and pop side events occur near each other across asynchronous clocks.",
+    "Whether pop_empty and pop_valid are always exact logical complements under all cut-through and boundary cases.",
+    "The exact behavior of push_full, push_slots, and pop_items during simultaneous cross-domain push/pop activity when synchronizer lag exists.",
+    "Whether push_receiver_in_reset is combinational from reset intent or itself delayed/registered in the push domain.",
+    "The exact accepted-write capacity under credit_withhold_push and credit_initial_push configurations if those values do not correspond cleanly to the physical depth of 17."
+  ],
+  "forbidden_assumptions": [
+    "Do not assume a successful pop produces push_credit in a fixed number of push_clk cycles.",
+    "Do not assume push_credit is synchronous to pop_clk or directly observable in the same cycle as the pop.",
+    "Do not assume pop_valid/pop_data cut-through has a deterministic same-cycle timing relationship across asynchronous clocks beyond the functional possibility of cut-through.",
+    "Do not assume push_slots equals exactly 17 minus true occupancy on every push_clk cycle without CDC lag.",
+    "Do not assume pop_items equals exactly true occupancy on every pop_clk cycle without CDC lag.",
+    "Do not assume credit_count_push or credit_available_push update immediately on every remote-domain event.",
+    "Do not assume credit_available_push is nonnegative unless the configuration guarantees credit_withhold_push <= credit_count_push.",
+    "Do not assume pop_empty is always exactly the inverse of pop_valid in all intermediate cut-through situations unless explicitly proven by RTL.",
+    "Do not assume writes presented while full are accepted, ignored, or overwrite old data unless the test is explicitly checking safe rejection behavior.",
+    "Do not assume read-side outputs are cleared immediately on reset assertion; reset effect is specified as delayed by one domain clock.",
+    "Do not assume push_receiver_in_reset deasserts immediately when push_rst and push_sender_in_reset deassert; one-cycle registration may apply.",
+    "Do not assume an exact cycle-accurate internal pointer or synchronizer implementation beyond externally visible FIFO ordering and handshake semantics."
+  ],
+  "output_behavior": {
+    "combinational_outputs": [
+      "push_credit",
+      "pop_valid",
+      "pop_data"
+    ],
+    "registered_outputs": [
+      "push_receiver_in_reset",
+      "push_full",
+      "pop_empty",
+      "push_slots",
+      "credit_count_push",
+      "credit_available_push",
+      "pop_items"
+    ]
+  }
+}

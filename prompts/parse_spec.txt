@@ -10,6 +10,9 @@ Read the specification carefully and extract:
 6. **Edge cases**: What happens with overflow, underflow, wrap-around, simultaneous signals, etc.?
 7. **State transitions**: If sequential, what are the states and transitions?
 8. **Signal priorities**: When multiple control signals are asserted simultaneously, which takes priority?
+9. **Mutation-sensitive behaviors**: What details are most likely to be implemented incorrectly and therefore must be tested aggressively?
+10. **Executable interpretation**: What exact bit-level or cycle-level rule should a self-checking testbench implement as its golden reference?
+11. **Guaranteed vs ambiguous behaviors**: Which externally visible properties are explicitly guaranteed by the spec, and which details are plausible but too ambiguous to assert strictly in a testbench?
 
 Return your analysis as a JSON object with this exact structure:
 {
@@ -39,10 +42,58 @@ Return your analysis as a JSON object with this exact structure:
         "reset > enable > load",
         "write > read when both asserted"
     ],
+    "mutation_risks": [
+        "off-by-one error in counter rollover",
+        "shift amount interpreted in wrong direction",
+        "output updates one cycle late"
+    ],
+    "oracle_style": "formula" or "cycle_accurate" or "protocol_invariant",
+    "executable_reference": [
+        "Short, concrete rules a self-checking testbench can implement directly"
+    ],
+    "guaranteed_properties": [
+        "Only externally visible behaviors explicitly guaranteed by the specification"
+    ],
+    "ambiguous_properties": [
+        "Plausible but underspecified details that should not be asserted strictly"
+    ],
+    "forbidden_assumptions": [
+        "Exact timing/counter/latency assumptions that a testbench must avoid unless explicitly guaranteed"
+    ],
     "output_behavior": {
         "combinational_outputs": ["list of outputs driven combinationally"],
         "registered_outputs": ["list of outputs driven by flip-flops"]
     }
 }
 
-Be thorough. The quality of this extraction directly determines the quality of the generated testbench. If the spec is ambiguous about a behavior, note it in edge_cases and make your best inference.
+Be thorough. The quality of this extraction directly determines the quality of the generated testbench. If the spec is ambiguous about a behavior, note it in edge_cases and make your best inference. Favor concrete, testable inferences over generic summaries.
+When possible, phrase the behavior summary so it can be translated directly into Verilog reference-model code.
+For CDC, FIFO, queue, handshake, or protocol-heavy modules, distinguish between:
+- properties that are explicitly guaranteed by the interface contract
+- implementation details that are suggested but not guaranteed
+- timing details that should not be checked with exact cycle counts unless the spec is unambiguous
+- Set `oracle_style` to:
+  - `formula` for direct combinational formulas/mappings
+  - `cycle_accurate` for simple sequential logic whose state update is explicitly defined cycle by cycle
+  - `protocol_invariant` for FIFO/CDC/handshake/credit-style modules where only interface-level guarantees are safe
+- Prefer `protocol_invariant` over `cycle_accurate` when:
+  - a ready/valid or credit protocol has combinational outputs whose exact same-cycle behavior is only partially specified
+  - a status/output expression is given as arithmetic on 1-bit quantities and the intended truth table is underspecified
+  - the spec mixes "previous cycle" wording with combinationally generated control outputs
+  - an empty/bypass/preview behavior is described functionally but not with a complete same-cycle truth table
+- For protocol-heavy modules with exposed counters or status outputs, only place an exact equality rule in `guaranteed_properties` if the specification explicitly states that the output equals a precise current-state or next-state quantity under all relevant boundary conditions.
+- Otherwise, classify those outputs under `ambiguous_properties` and add matching entries to `forbidden_assumptions`, especially for:
+  - derived availability counters such as `credit_available = credit_count - credit_withhold`
+  - occupancy/status counters such as `items`, `slots`, `push_slots`, `pop_items`
+  - predictive outputs such as `*_next`
+  - cross-domain status/count outputs in CDC designs
+- For protocol-heavy modules, prefer `executable_reference` rules of the form:
+  - direct pass-through equivalence
+  - reset blocking behavior
+  - handshake legality
+  - stability under backpressure
+  - FIFO ordering for clearly accepted transactions
+  - no duplication / no spontaneous disappearance
+- Do not let `executable_reference` default to a full cycle-by-cycle counter scoreboard unless the specification is explicit enough to justify it.
+- Populate `executable_reference` with concise, testbench-implementable rules.
+- Populate `guaranteed_properties`, `ambiguous_properties`, and `forbidden_assumptions` explicitly. Do not leave them empty if the spec contains any ambiguity.

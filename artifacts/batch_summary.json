@@ -1,0 +1,86 @@
+{
+  "problems_evaluated": 10,
+  "average_score": 0.6,
+  "rows": [
+    {
+      "problem_name": "cdc_fifo_flops_push_credit",
+      "score": 0.0,
+      "num_passing": 0,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 511.5456531047821
+    },
+    {
+      "problem_name": "counter",
+      "score": 0.0,
+      "num_passing": 0,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 337.3343780040741
+    },
+    {
+      "problem_name": "credit_receiver",
+      "score": 0.0,
+      "num_passing": 0,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 333.4535069465637
+    },
+    {
+      "problem_name": "ecc_sed_encoder",
+      "score": 1.0,
+      "num_passing": 1,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 163.56056118011475
+    },
+    {
+      "problem_name": "enc_bin2gray",
+      "score": 1.0,
+      "num_passing": 1,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 108.40505194664001
+    },
+    {
+      "problem_name": "enc_bin2onehot",
+      "score": 1.0,
+      "num_passing": 1,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 154.12182092666626
+    },
+    {
+      "problem_name": "fifo_flops",
+      "score": 0.0,
+      "num_passing": 0,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 492.1915605068207
+    },
+    {
+      "problem_name": "lfsr",
+      "score": 1.0,
+      "num_passing": 1,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 205.93536972999573
+    },
+    {
+      "problem_name": "shift_left",
+      "score": 1.0,
+      "num_passing": 1,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 180.46308517456055
+    },
+    {
+      "problem_name": "shift_right",
+      "score": 1.0,
+      "num_passing": 1,
+      "num_total": 31,
+      "num_compile_errors": 0,
+      "runtime_seconds": 191.64583444595337
+    }
+  ]
+}

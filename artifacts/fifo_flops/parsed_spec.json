@@ -1,0 +1,216 @@
+{
+  "module_name": "fifo_flops",
+  "ports": [
+    {
+      "name": "clk",
+      "direction": "input",
+      "width": 1,
+      "type": "clock"
+    },
+    {
+      "name": "rst",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "push_valid",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "push_ready",
+      "direction": "output",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "push_data",
+      "direction": "input",
+      "width": 8,
+      "type": "data"
+    },
+    {
+      "name": "pop_ready",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "pop_valid",
+      "direction": "output",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "pop_data",
+      "direction": "output",
+      "width": 8,
+      "type": "data"
+    },
+    {
+      "name": "full",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "full_next",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "empty",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "empty_next",
+      "direction": "output",
+      "width": 1,
+      "type": "status"
+    },
+    {
+      "name": "slots",
+      "direction": "output",
+      "width": 4,
+      "type": "status"
+    },
+    {
+      "name": "slots_next",
+      "direction": "output",
+      "width": 4,
+      "type": "status"
+    },
+    {
+      "name": "items",
+      "direction": "output",
+      "width": 4,
+      "type": "status"
+    },
+    {
+      "name": "items_next",
+      "direction": "output",
+      "width": 4,
+      "type": "status"
+    }
+  ],
+  "has_clock": true,
+  "clock_name": "clk",
+  "has_reset": true,
+  "reset_name": "rst",
+  "reset_type": "sync_active_high",
+  "is_sequential": true,
+  "behavior_summary": "This module is a single-clock synchronous FIFO with depth 13 and data width 8. A push is accepted on a rising edge when push_valid and push_ready are both 1. A pop is accepted on a rising edge when pop_valid and pop_ready are both 1. When the FIFO is empty, it supports combinational bypass: if push_valid=1 and pop_ready=1, then pop_valid is asserted and pop_data equals push_data in the same cycle, providing zero-cycle transfer through the empty FIFO. Otherwise, when data is stored internally, pop_data/pop_valid are driven combinationally from the current head entry of the FIFO storage. Stored entries preserve FIFO ordering. If the FIFO is non-empty, popping removes the head entry at the clock edge and the next queued item becomes visible on pop_data on the following cycle. When empty and pop_ready=0, a valid push is not bypassed; it is stored for later delivery. Status outputs report current occupancy/fullness and next-cycle predicted occupancy/fullness based on pending accepted push/pop transactions.",
+  "edge_cases": [
+    "At depth 0, if push_valid=1 and pop_ready=1, the transfer bypasses storage and pop_data must equal push_data combinationally in that same cycle.",
+    "At depth 0, if push_valid=1 and pop_ready=0, the item must be buffered rather than bypassed.",
+    "A push is accepted only when push_valid && push_ready; if full, push_ready must be 0 and no push may be accepted.",
+    "A pop occurs only when pop_valid && pop_ready; if empty and no bypass condition makes data available, pop_valid must be 0 and no pop may be accepted.",
+    "Simultaneous accepted push and accepted pop should leave occupancy unchanged while still preserving FIFO ordering.",
+    "When non-empty, the popped item is the current head entry; the next stored item appears on pop_data on the following clock cycle, not necessarily combinationally in the same cycle after the pop edge.",
+    "Occupancy is bounded to 0..13; items must not underflow below 0 or overflow above 13.",
+    "slots is the complement of items relative to capacity 13, so slots must remain bounded to 0..13.",
+    "On reset, the FIFO becomes empty, push_ready=1, pop_valid=0, full=0, empty=1, items=0, slots=13.",
+    "The spec states next-state flags are based on current state plus pending push/pop transactions, but exact same-cycle behavior of *_next during bypass/reset edges is not fully spelled out and should be treated carefully."
+  ],
+  "state_transitions": [
+    "RESET state on rising clk with rst=1: occupancy becomes 0 and status reflects empty FIFO.",
+    "EMPTY -> EMPTY when no accepted push occurs.",
+    "EMPTY -> NONEMPTY when a push is accepted but not consumed purely through empty-bypass storage-elision.",
+    "EMPTY with push_valid=1 and pop_ready=1 supports direct transfer in the same cycle; externally a pop transaction occurs immediately via bypass.",
+    "NONEMPTY -> NONEMPTY when neither push nor pop is accepted, or when both are accepted in the same cycle.",
+    "NONEMPTY -> more occupied when push is accepted and pop is not accepted.",
+    "NONEMPTY -> less occupied when pop is accepted and push is not accepted.",
+    "NONEMPTY -> EMPTY when exactly one stored item exists and that item is popped without a simultaneous accepted push replacing occupancy."
+  ],
+  "priorities": [
+    "rst has highest priority over normal FIFO operation.",
+    "Handshake qualification has priority over raw valid/ready assertions: transfers occur only on valid && ready.",
+    "When empty and both push_valid and pop_ready are high, bypass behavior takes priority over presenting no data.",
+    "A full FIFO must block pushes by deasserting push_ready.",
+    "An empty FIFO without bypass opportunity must block pops by deasserting pop_valid."
+  ],
+  "mutation_risks": [
+    "Bypass implemented incorrectly when empty, especially failing to drive pop_data=push_data combinationally in the same cycle.",
+    "Bypass conditioned on wrong signals, e.g. requiring internal state update first or ignoring pop_ready.",
+    "Incorrect behavior for empty + push_valid + !pop_ready, where data should be stored rather than lost or falsely popped.",
+    "Off-by-one errors in occupancy/count/status updates, especially around transitions 0<->1 and 12<->13.",
+    "Incorrect full or empty flag generation at capacity boundaries.",
+    "Incorrect handling of simultaneous push and pop, especially occupancy changing by +/-1 instead of staying constant.",
+    "Incorrect FIFO ordering after mixed push/pop sequences.",
+    "pop_data updated one cycle late or too early after a pop from buffered mode.",
+    "push_ready derived incorrectly during full or nearly-full conditions.",
+    "pop_valid derived incorrectly during empty, bypass, or single-entry conditions.",
+    "items_next/slots_next/full_next/empty_next computed from wrong transaction assumptions.",
+    "slots not equal to 13-items, or counters sized/updated incorrectly."
+  ],
+  "oracle_style": "protocol_invariant",
+  "executable_reference": [
+    "Treat accepted_push as (push_valid && push_ready) and accepted_pop as (pop_valid && pop_ready).",
+    "On any rising edge with rst=1, the reference occupancy becomes 0; afterward expect empty=1, full=0, items=0, slots=13, pop_valid=0, push_ready=1.",
+    "Maintain a reference queue of accepted pushed bytes that were not consumed via same-cycle empty bypass.",
+    "If the reference queue is non-empty, expect pop_valid=1 and expect pop_data to equal the oldest queued byte.",
+    "If the reference queue is empty and push_valid=1 and pop_ready=1 and rst=0, expect pop_valid=1 and pop_data=push_data in that same cycle.",
+    "If the reference queue is empty and bypass condition is false, expect pop_valid=0.",
+    "When the queue is full (13 stored items), expect push_ready=0; otherwise expect push_ready=1.",
+    "When an accepted pop occurs from buffered data, remove exactly the oldest queued item at the active clock edge.",
+    "When an accepted push occurs while not in empty-bypass pass-through-only behavior, append push_data to the tail of the reference queue at the active clock edge.",
+    "For simultaneous accepted push and accepted pop in buffered mode, expect the popped value to be the pre-edge head item and preserve FIFO order for subsequent outputs.",
+    "Expect items to equal current stored queue depth and slots to equal 13 minus that depth.",
+    "Check full iff items==13 and empty iff items==0.",
+    "Check *_next only as one-step lookahead of occupancy/status derived from current visible state and the currently pending accepted transactions when that relationship is unambiguous."
+  ],
+  "guaranteed_properties": [
+    "The module is a synchronous single-clock FIFO using clk.",
+    "rst is synchronous and active high.",
+    "FIFO depth is 13 entries and data width is 8 bits.",
+    "push transactions are accepted only when push_valid and push_ready are both high on a clock cycle.",
+    "pop transactions occur only when pop_valid and pop_ready are both high on a clock cycle.",
+    "push_ready is asserted whenever the FIFO is not full.",
+    "pop_valid is asserted whenever the FIFO contains at least one valid item.",
+    "When the FIFO is empty and push_valid=1 and pop_ready=1, pop_valid is asserted combinationally and pop_data equals push_data in the same cycle.",
+    "When the FIFO is not empty, data is output in FIFO order from the head of internal storage.",
+    "After a buffered pop, the next queued item becomes available on pop_data on the following clock cycle.",
+    "pop_data and pop_valid are not driven by a dedicated final register stage; they are combinationally driven from bypass inputs or internal memory read output.",
+    "On reset, externally visible empty/full/items/slots/push_ready/pop_valid reflect an empty FIFO: empty=1, full=0, items=0, slots=13, push_ready=1, pop_valid=0."
+  ],
+  "ambiguous_properties": [
+    "Exact port directions and bit widths are inferred from the reference RTL header and FIFO capacity, not directly enumerated in the prose spec for every status signal.",
+    "The exact combinational truth table for full_next, empty_next, items_next, and slots_next during all corner cases is not completely spelled out cycle-by-cycle.",
+    "The precise meaning of 'currently stored' versus inclusion of same-cycle bypass-only traffic in items/items_next is not fully formalized in the prose.",
+    "Whether empty/full/items/slots are purely current-state combinational decodes of registered occupancy or include any same-cycle combinational adjustments is not explicitly stated.",
+    "Behavior of pop_data when pop_valid=0 is unspecified; it may hold a stale/internal value and should not be strictly checked unless pop_valid=1.",
+    "Same-cycle interaction when the FIFO holds one item and also sees a simultaneous push and pop may permit several equivalent implementations of internal pointer movement as long as visible FIFO semantics hold.",
+    "The exact visibility timing of next-state outputs during rst=1 versus immediately after the active edge is not fully specified."
+  ],
+  "forbidden_assumptions": [
+    "Do not assume pop_data has a meaningful value whenever pop_valid=0.",
+    "Do not assume exact internal pointer encoding, storage implementation, or whether memory write/read share addresses in any specific way.",
+    "Do not assume bypass traffic increments items if the transfer is accepted directly through an empty FIFO unless the implementation clearly exposes that behavior; check the externally guaranteed handshake/result instead.",
+    "Do not assume an exact cycle-accurate formula for *_next beyond clear one-step lookahead intent unless validated by the explicit spec.",
+    "Do not assume same-cycle combinational availability of the next buffered item immediately after a pop edge; the spec explicitly says following clock cycle.",
+    "Do not assume outputs other than the listed reset-visible flags are forced to any particular value during reset, especially pop_data.",
+    "Do not assume acceptance of push when full or pop when empty, even if opposite-side handshake is asserted in the same cycle, except where explicit empty-bypass behavior is guaranteed.",
+    "Do not assume any latency or timing guarantee beyond the explicit empty-FIFO cut-through case and the stated following-cycle availability after buffered pops."
+  ],
+  "output_behavior": {
+    "combinational_outputs": [
+      "push_ready",
+      "pop_valid",
+      "pop_data",
+      "full",
+      "full_next",
+      "empty",
+      "empty_next",
+      "items",
+      "items_next",
+      "slots",
+      "slots_next"
+    ],
+    "registered_outputs": []
+  }
+}

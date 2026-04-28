@@ -32,19 +32,36 @@
   "reset_name": "reset",
   "reset_type": "sync_active_high",
   "is_sequential": true,
-  "behavior_summary": "On each rising edge of clk the 4-bit register count either resets to 0 if reset=1, increments by one modulo 16 when enable=1, or holds its previous value when enable=0 and reset=0.",
+  "behavior_summary": "A 4-bit positive-edge-triggered up counter. On each rising edge of clk, if reset is asserted, count is synchronously set to 0. Otherwise, if enable is asserted, count increments by 1. Otherwise, count retains its previous value. Because count is 4 bits wide, incrementing past 15 wraps around to 0. The output count is a registered state-holding output.",
   "edge_cases": [
-    "Wrap-around: when count reaches 4'b1111 and enable stays high with reset low, the next increment wraps count to 4'b0000.",
-    "Reset priority: reset overrides enable on the same clock edge, so count is cleared even if enable=1.",
-    "Hold behavior: when enable=0 and reset=0, count must remain unchanged across clock edges; no combinational glitches described."
+    "Synchronous reset only takes effect on the rising edge of clk; asserting reset between clock edges does not immediately change count.",
+    "If reset and enable are both high on a rising edge, reset takes priority and count becomes 0 rather than incrementing.",
+    "When enable is low and reset is low on a rising edge, count holds its previous value.",
+    "When count is 15 and enable is high with reset low on a rising edge, count wraps around to 0 due to 4-bit overflow.",
+    "No underflow behavior applies because this is only an up counter.",
+    "The specification does not define any explicit power-up initial value before the first relevant clock edge; best inference is that only synchronous reset guarantees count = 0."
   ],
   "state_transitions": [
-    "count=N -> count=0 on rising clk if reset=1 (N is any 0-15).",
-    "count=N -> count=(N+1) mod 16 on rising clk if reset=0 and enable=1.",
-    "count=N -> count=N on rising clk if reset=0 and enable=0."
+    "For any current count value N in 0 to 15: on posedge clk, if reset=1, next state is 0.",
+    "For any current count value N in 0 to 14: on posedge clk, if reset=0 and enable=1, next state is N+1.",
+    "For current count value 15: on posedge clk, if reset=0 and enable=1, next state is 0.",
+    "For any current count value N in 0 to 15: on posedge clk, if reset=0 and enable=0, next state remains N."
   ],
   "priorities": [
-    "reset > enable > hold (implicit when both reset and enable asserted)."
+    "reset > enable > hold",
+    "On each posedge clk, reset is evaluated before enable."
+  ],
+  "mutation_risks": [
+    "Implementing reset as asynchronous instead of synchronous.",
+    "Implementing reset with wrong polarity (active-low instead of active-high).",
+    "Giving enable priority over reset when both are asserted.",
+    "Failing to hold count when enable is low.",
+    "Incrementing on the wrong clock edge (negedge instead of posedge).",
+    "Updating count combinationally instead of only on clock edges.",
+    "Using incorrect wrap-around behavior at 15, such as saturating at 15 instead of rolling over to 0.",
+    "Using the wrong counter width, causing incorrect overflow timing.",
+    "Off-by-one increment behavior, especially around transitions 14->15 and 15->0.",
+    "Output count updating one cycle late or early relative to the intended posedge behavior."
   ],
   "output_behavior": {
     "combinational_outputs": [],

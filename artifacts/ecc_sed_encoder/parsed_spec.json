@@ -1,0 +1,80 @@
+{
+  "module_name": "ecc_sed_encoder",
+  "ports": [
+    {
+      "name": "clk",
+      "direction": "input",
+      "width": 1,
+      "type": "clock"
+    },
+    {
+      "name": "rst",
+      "direction": "input",
+      "width": 1,
+      "type": "reset"
+    },
+    {
+      "name": "data_valid",
+      "direction": "input",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "data",
+      "direction": "input",
+      "width": 12,
+      "type": "data"
+    },
+    {
+      "name": "enc_valid",
+      "direction": "output",
+      "width": 1,
+      "type": "control"
+    },
+    {
+      "name": "enc_codeword",
+      "direction": "output",
+      "width": 13,
+      "type": "data"
+    }
+  ],
+  "has_clock": true,
+  "clock_name": "clk",
+  "has_reset": true,
+  "reset_name": "rst",
+  "reset_type": "sync_active_high",
+  "is_sequential": false,
+  "behavior_summary": "This module is a purely combinational even-parity encoder with interface-only clock and reset ports. For any cycle in which data_valid is 1, it computes parity as the XOR reduction of data[11:0], then drives enc_codeword = {parity, data[11:0]}. Because parity equals ^data, the full 13-bit codeword always contains an even number of 1 bits. enc_valid directly mirrors data_valid with no cycle latency. When data_valid is 0, enc_valid must be 0 and enc_codeword is unspecified and should not be checked.",
+  "edge_cases": [
+    "clk and rst are present in the interface but do not affect encoding behavior; toggling either must not change enc_valid or enc_codeword except through other inputs.",
+    "When data_valid is 1 and data has an odd number of 1s, parity must be 1 so the 13-bit codeword has even parity.",
+    "When data_valid is 1 and data has an even number of 1s, parity must be 0 so the 13-bit codeword remains even parity.",
+    "enc_codeword[12] is the parity bit and enc_codeword[11:0] must exactly equal data[11:0]; no bit reordering, inversion, or shifting is allowed.",
+    "When data_valid is 0, enc_valid must be 0 and enc_codeword is not guaranteed; a testbench should avoid strict checking of enc_codeword in that case.",
+    "There is no sequential state, no buffering, and no one-cycle delay; outputs are same-cycle combinational functions of inputs.",
+    "Overflow, underflow, saturation, and wrap-around do not apply because the logic only computes parity and concatenation."
+  ],
+  "state_transitions": [],
+  "priorities": [
+    "data_valid gates only output validity, not the parity calculation rule itself",
+    "No control-signal priority tree exists because the design is combinational and has no mutually competing commands",
+    "Functional interpretation priority for checking is: if data_valid == 1, check enc_valid == 1 and enc_codeword == {^data, data}; if data_valid == 0, check only enc_valid == 0"
+  ],
+  "mutation_risks": [
+    "Parity computed with the wrong polarity, e.g. using ~(^data) instead of ^data",
+    "Parity bit appended at LSB instead of prepended at MSB",
+    "Data bits copied into enc_codeword in the wrong order or wrong slice",
+    "enc_valid implemented as a registered signal or delayed by one cycle instead of directly following data_valid",
+    "clk or rst incorrectly inserted into the functional logic, causing outputs to change with clock edges or reset assertion",
+    "Parity computed over 13 bits, 11 bits, or some incorrect subset of data bits instead of exactly all 12 data bits",
+    "enc_codeword forced to zero or held stable when data_valid is 0 despite being specified as don't-care",
+    "Use of XNOR/reduction inversion causing odd-parity rather than even-parity codeword"
+  ],
+  "output_behavior": {
+    "combinational_outputs": [
+      "enc_valid",
+      "enc_codeword"
+    ],
+    "registered_outputs": []
+  }
+}

@@ -15,18 +15,34 @@
     }
   ],
   "has_clock": false,
-  "clock_name": null,
+  "clock_name": "",
   "has_reset": false,
-  "reset_name": null,
-  "reset_type": null,
+  "reset_name": "",
+  "reset_type": "",
   "is_sequential": false,
-  "behavior_summary": "Continuously drives gray as the Gray-code equivalent of the 10-bit binary input: gray[9] mirrors bin[9], and each lower bit gray[i] for i=0..8 equals bin[i+1] XOR bin[i], equivalent to gray = bin ^ (bin >> 1).",
+  "behavior_summary": "Purely combinational 10-bit binary-to-Gray-code encoder. For any input value bin[9:0], the output is gray[9] = bin[9], and for each i from 0 to 8, gray[i] = bin[i+1] XOR bin[i]. Equivalently, gray = bin ^ (bin >> 1), using a logical right shift that inserts 0 above the MSB. The output must reflect any change on bin without clocking or state.",
   "edge_cases": [
-    "Purely combinational: gray updates immediately with any change on bin; no storage or timing behavior.",
-    "No overflow/underflow handling is needed because conversion is bitwise; the operation naturally maps all 10-bit values 1:1 to Gray code."
+    "There is no overflow, underflow, saturation, wrap-around, or internal state; every output bit is a direct combinational function of the current input bits.",
+    "For bin = 10'b0000000000, gray must be 10'b0000000000.",
+    "For bin = 10'b1111111111, gray must be 10'b1000000000.",
+    "The MSB is copied directly: gray[9] must always equal bin[9].",
+    "The lower 9 bits must each use the adjacent higher input bit: gray[i] = bin[i+1] ^ bin[i] for i = 0..8.",
+    "Equivalent whole-vector interpretation is gray = bin ^ (bin >> 1); a testbench should ensure the shift is right-shift by one bit, not left-shift.",
+    "Because the spec says purely combinational, output changes are not delayed by a clock or stored state; only normal combinational propagation delay is implied, not cycle-based latency.",
+    "Behavior for X/Z input values is not explicitly specified; only 2-state bit-accurate behavior is guaranteed by the natural-language spec."
   ],
   "state_transitions": [],
   "priorities": [],
+  "mutation_risks": [
+    "MSB implemented incorrectly, especially forcing gray[9] to 0 or XORing it instead of copying bin[9].",
+    "One or more bit positions wired to the wrong adjacent input bits, causing index-shift errors.",
+    "Using left shift instead of right shift in the vector formula.",
+    "Off-by-one mistakes in the loop bounds, especially for gray[8] or gray[0].",
+    "A single output bit tied to a constant or omitted from the XOR logic.",
+    "Reversed XOR operands are harmless, but using XNOR instead of XOR is a likely mutation.",
+    "Output width mismatches or partial assignment leaving some bits un-driven.",
+    "Accidentally making the design sequential or latching instead of purely combinational."
+  ],
   "output_behavior": {
     "combinational_outputs": [
       "gray"
